@@ -8,17 +8,17 @@ Created on 01/21/2020
 import os
 import sys
 import tensorflow as tf
-import cnn
-import sample_prep
 import pandas as pd
-import prep
-
+from openslide import OpenSlide
 import matplotlib
 matplotlib.use('Agg')
+import prep
+import cnn
+import sample_prep
+
 
 # main; trc is training image count; tec is testing image count; to_reload is the model to load; test or not
 def main(trc, tec, vac, cls, weight, testset=None, to_reload=None, test=None):
-
     if test:  # restore for testing only
         m = cnn.INCEPTION(INPUT_DIM, HYPERPARAMS, meta_graph=to_reload, log_dir=LOG_DIR,
                            meta_dir=LOG_DIR, model=md, weights=weight)
@@ -65,12 +65,53 @@ def main(trc, tec, vac, cls, weight, testset=None, to_reload=None, test=None):
 
 if __name__ == "__main__":
     tf.reset_default_graph()
+    mode, out_dir, feature, architecture, modeltoload, path_to_modeltoload, \
+    imagefile, batchsize, epoch, resolution = prep.input_handler()
+
+    if architecture in ["PC1", "PC2", "PC3", "PC4"]:
+        sup = True
+    else:
+        sup = False
+
+    if feature == 'subtype':
+        classes = 4
+    else:
+        classes = 2
+
+    # input image dimension
+    INPUT_DIM = [batchsize, 299, 299, 3]
+    # hyper parameters
+    HYPERPARAMS = {
+        "batch_size": batchsize,
+        "dropout": 0.3,
+        "learning_rate": 1E-4,
+        "classes": classes,
+        "sup": sup
+    }
+
+    # paths to directories
+    img_dir = '../tiles/'
+    LOG_DIR = "../Results/{}".format(out_dir)
+    METAGRAPH_DIR = "../Results/{}".format(out_dir)
+    data_dir = "../Results/{}/data".format(out_dir)
+    out_dir = "../Results/{}/out".format(out_dir)
+
     # make directories if not exist
     for DIR in (LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
         try:
             os.mkdir(DIR)
         except FileExistsError:
             pass
+
+    if mode == "test":
+        if feature == 'histology':
+            pos_score = "Serous_score"
+            neg_score = "Endometrioid_score"
+        else:
+            pos_score = "POS_score"
+            neg_score = "NEG_score"
+
+
     # get counts of testing, validation, and training datasets;
     # if not exist, prepare testing and training datasets from sampling
     try:

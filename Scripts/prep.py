@@ -10,72 +10,15 @@ import sys
 import pandas as pd
 import tensorflow as tf
 import cv2
-import data_input
 import numpy as np
 import argparse
 import easygui
-
-
-dirr = sys.argv[1]  # output directory
-bs = sys.argv[2]  # batch size
-bs = int(bs)
-md = sys.argv[3]  # architecture to use
-pdmd = sys.argv[4]  # feature to predict
-
-try:
-    ep = sys.argv[5]  # epochs to train
-    ep = int(ep)
-except IndexError:
-    ep = 100
-
-try:
-    sup = sys.argv[6]  # fusion mode
-except IndexError:
-    sup = False
-
-if pdmd == 'subtype':
-    classes = 4
-else:
-    classes = 2
-
-print('Input config:')
-print(dirr, bs, md, pdmd, ep, sup)
-
-# input image dimension
-INPUT_DIM = [bs, 299, 299, 3]
-# hyper parameters
-HYPERPARAMS = {
-    "batch_size": bs,
-    "dropout": 0.3,
-    "learning_rate": 1E-4,
-    "classes": classes,
-    "sup": sup
-}
-
-# paths to directories
-img_dir = '../tiles/'
-LOG_DIR = "../Results/{}".format(dirr)
-METAGRAPH_DIR = "../Results/{}".format(dirr)
-data_dir = "../Results/{}/data".format(dirr)
-out_dir = "../Results/{}/out".format(dirr)
-
+import staintools
+import data_input
+import Slicer
 
 def input_handler():
-    parser = argparse.ArgumentParser(description="Parse some arguments")
-    parser.add_argument('--gui', type=str, choices=['True', 'False'], default='False')
-    parser.add_argument('--mode', type=str, choices=['train', 'validate', 'test'], default='train')
-    parser.add_argument('--out_dir', type=str, default=None)
-    parser.add_argument('--batchsize', type=int, default=24)
-    parser.add_argument('--architecture', type=str, default="P1")
-    parser.add_argument('--feature', type=str, default=None)
-    parser.add_argument('--epoch', type=float, default=np.inf)
-    parser.add_argument('--modeltoload', type=str, default=None)
-    parser.add_argument('--path_to_modeltoload', type=str, default=None)
-    parser.add_argument('--imagefile', type=str, default=None)
-
-    args = parser.parse_args()
-    gui = args.gui == 'True'
-    if gui:
+    try:
         # Box1
         msg = "Hello! Hola! Bonjour! Ciao! I'm Panoptes GUI." \
               "By clicking continue, you agree with my terms and conditions. " \
@@ -155,17 +98,18 @@ def input_handler():
             imagefile = None
         # Box8
         msg = "Almost there! Do you agree with our default batch size and max epoch number?" \
-              "Batch_size = 24; max epoch number = infinity"
+              "Batch_size = 24; max epoch number = infinity; Max resolution of original slides = None"
         title = "Please Confirm"
         if easygui.ccbox(msg, title):  # show a Continue/Cancel dialog
             batchsize = 24
             epoch = np.inf
+            resolution = None
             pass  # user chose Continue
         else:  # user chose Cancel
             # Box9
             msg = "Please enter your choice (integer only)"
             title = "Enter your choice"
-            fieldNames = ["batch size", "max epoch"]
+            fieldNames = ["batch size", "max epoch", "max resolution"]
             fieldValues = []  # we start with blanks for the values
             fieldValues = easygui.multenterbox(msg, title, fieldNames)
             # make sure that none of the fields was left blank
@@ -179,7 +123,22 @@ def input_handler():
                 fieldValues = easygui.multenterbox(errmsg, title, fieldNames, fieldValues)
             batchsize = int(fieldValues[0])
             epoch = int(fieldValues[1])
-    else:
+            resolution = int(fieldValues[2])
+    except:
+        parser = argparse.ArgumentParser(description="Parse some arguments")
+        parser.add_argument('--mode', type=str, choices=['train', 'validate', 'test'])
+        parser.add_argument('--out_dir', type=str)
+        parser.add_argument('--batchsize', type=int)
+        parser.add_argument('--architecture', type=str)
+        parser.add_argument('--feature', type=str)
+        parser.add_argument('--epoch', type=float)
+        parser.add_argument('--modeltoload', type=str)
+        parser.add_argument('--path_to_modeltoload', type=str)
+        parser.add_argument('--imagefile', type=str)
+        parser.add_argument('--resolution', type=int)
+
+        args = parser.parse_args()
+
         mode = args.mode
         out_dir = args.out_dir
         batchsize = args.batchsize
@@ -189,8 +148,30 @@ def input_handler():
         modeltoload = args.modeltoload
         path_to_modeltoload = args.path_to_modeltoload
         imagefile = args.imagefile
+        resolution = args.resolution
 
-    return mode, out_dir, batchsize, architecture, feature, epoch, modeltoload, path_to_modeltoload, imagefile
+        if mode is None: mode = input("Please input a mode (train/validation/test): ")
+        if out_dir is None: out_dir = input("Please input a directory name for outputs (under 'Results' directory): ")
+        if feature is None: feature = input("Please input a feature to predict: ")
+        if architecture is None: architecture = input("Please input an architecture to use: ")
+        if modeltoload is None: modeltoload = \
+            str(input("Please input trained model to load (ENTER to skip): ") or None)
+        if path_to_modeltoload is None: path_to_modeltoload = \
+            str(input("Please input full path to trained model to load (ENTER to skip): ") or None)
+        if imagefile is None: imagefile = str(input("Please input a slide to predict (ENTER to skip): ") or None)
+
+        if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
+        if epoch is None: epoch = float(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or np.inf)
+        if resolution is None: resolution = \
+            input("Please input the max resolution of slides (ENTER to skip): ") or None
+
+    print("All set! Your inputs are: ")
+    print([mode, out_dir, feature, architecture, modeltoload, path_to_modeltoload,
+           imagefile, batchsize, epoch, resolution], flush=True)
+
+    return mode, out_dir, feature, architecture, modeltoload, path_to_modeltoload, \
+           imagefile, batchsize, epoch, resolution
+
 
 # count numbers of training and testing images
 def counters(totlist_dir, cls):
@@ -290,3 +271,71 @@ def tfreloader(mode, ep, bs, cls, ctr, cte, cva, data_dir):
     datasets = data_input.DataSet(bs, ct, ep=ep, cls=cls, mode=mode, filename=filename)
 
     return datasets
+
+
+def cutter(img, outdirr, cutt, resolution=None):
+    # load standard image for normalization
+    std = staintools.read_image("../colorstandard.png")
+    std = staintools.LuminosityStandardizer.standardize(std)
+    if resolution is None:
+        if "TCGA" in img:
+            for m in range(1, cutt):
+                level = int(m / 3 + 1)
+                tff = int(m / level)
+                otdir = "../Results/{}/level{}".format(outdirr, str(m))
+                try:
+                    os.mkdir(otdir)
+                except(FileExistsError):
+                    pass
+                try:
+                    numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
+                                                                             level=level, std_img=std, ft=tff)
+                except Exception as e:
+                    print('Error!')
+                    pass
+        else:
+            for m in range(1, cutt):
+                level = int(m / 2)
+                tff = int(m % 2 + 1)
+                otdir = "../Results/{}/level{}".format(outdirr, str(m))
+                try:
+                    os.mkdir(otdir)
+                except(FileExistsError):
+                    pass
+                try:
+                    numx, numy, raw, tct = Slicer.tile(image_file=imgfile, outdir=otdir,
+                                                                             level=level, std_img=std, ft=tff)
+                except Exception as e:
+                    print('Error!')
+                    pass
+    elif resolution == 20:
+        for m in range(1, cutt):
+            level = int(m / 2)
+            tff = int(m % 2 + 1)
+            otdir = "../Results/{}/level{}".format(outdirr, str(m))
+            try:
+                os.mkdir(otdir)
+            except(FileExistsError):
+                pass
+            try:
+                numx, numy, raw, tct = Slicer.tile(image_file=imgfile, outdir=otdir,
+                                                   level=level, std_img=std, ft=tff)
+            except Exception as e:
+                print('Error!')
+                pass
+    elif resolution ==40:
+        for m in range(1, cutt):
+            level = int(m / 3 + 1)
+            tff = int(m / level)
+            otdir = "../Results/{}/level{}".format(outdirr, str(m))
+            try:
+                os.mkdir(otdir)
+            except(FileExistsError):
+                pass
+            try:
+                numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
+                                                   level=level, std_img=std, ft=tff)
+            except Exception as e:
+                print('Error!')
+                pass
+
