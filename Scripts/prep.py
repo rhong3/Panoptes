@@ -154,12 +154,10 @@ def input_handler():
         if out_dir is None: out_dir = input("Please input a directory name for outputs (under 'Results' directory): ")
         if feature is None: feature = input("Please input a feature to predict: ")
         if architecture is None: architecture = input("Please input an architecture to use: ")
-        if modeltoload is None: modeltoload = \
-            str(input("Please input trained model to load (ENTER to skip): ") or None)
+        if modeltoload is None: modeltoload = input("Please input trained model to load (ENTER to skip): ") or None
         if path_to_modeltoload is None: path_to_modeltoload = \
-            str(input("Please input full path to trained model to load (ENTER to skip): ") or None)
-        if imagefile is None: imagefile = str(input("Please input a slide to predict (ENTER to skip): ") or None)
-
+            input("Please input full path to trained model to load (ENTER to skip): ") or None
+        if imagefile is None: imagefile = input("Please input a slide to predict (ENTER to skip): ") or None
         if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
         if epoch is None: epoch = float(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or np.inf)
         if resolution is None: resolution = \
