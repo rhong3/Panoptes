@@ -13,7 +13,7 @@ import re
 
 
 # pair tiles of 10x, 5x, 2.5x of the same area
-def paired_tile_ids_in(slide, label, root_dir, resolution=None, age=None, BMI=None):
+def paired_tile_ids_in(slide, label, root_dir, age=None, BMI=None, resolution=None):
     dira = os.path.isdir(root_dir + 'level1')
     dirb = os.path.isdir(root_dir + 'level2')
     dirc = os.path.isdir(root_dir + 'level3')
@@ -105,7 +105,7 @@ def big_image_sum(pmd, path='../tiles/', ref_file='../sample_label.csv'):
 # seperate into training and testing (can separate ramdomly or according to prepared dictionary);
 # each type is the same separation ratio on big images;
 # test and train csv files contain tiles' path.
-def set_sep(alll, path, cls, sep_file=None, cut=0.2, batchsize=24):
+def set_sep(alll, path, cls, resolution=None, sep_file=None, cut=0.2, batchsize=24):
     trlist = []
     telist = []
     valist = []
@@ -138,13 +138,16 @@ def set_sep(alll, path, cls, sep_file=None, cut=0.2, batchsize=24):
     train_tiles = pd.DataFrame(columns=['slide', 'label', 'L0path', 'L1path', 'L2path', 'age', 'BMI'])
     validation_tiles = pd.DataFrame(columns=['slide', 'label', 'L0path', 'L1path', 'L2path', 'age', 'BMI'])
     for idx, row in test.iterrows():
-        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'], row['age'], row['BMI'])
+        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'],
+                                      row['age'], row['BMI'], resolution=resolution)
         test_tiles = pd.concat([test_tiles, tile_ids])
     for idx, row in train.iterrows():
-        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'], row['age'], row['BMI'])
+        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'],
+                                      row['age'], row['BMI'], resolution=resolution)
         train_tiles = pd.concat([train_tiles, tile_ids])
     for idx, row in validation.iterrows():
-        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'], row['age'], row['BMI'])
+        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'],
+                                      row['age'], row['BMI'], resolution=resolution)
         validation_tiles = pd.concat([validation_tiles, tile_ids])
 
     # No shuffle on test set
