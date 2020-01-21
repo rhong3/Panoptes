@@ -12,35 +12,6 @@ import numpy as np
 import re
 
 
-# get all full paths of images
-def image_ids_in(root_dir, ignore=['.DS_Store','dict.csv', 'all.csv']):
-    ids = []
-    for id in os.listdir(root_dir):
-        if id in ignore:
-            print('Skipping ID:', id)
-        else:
-            ids.append(id)
-    return ids
-
-
-# Get intersection of 2 lists
-def intersection(lst1, lst2):
-    lst3 = [value for value in lst1 if value in lst2]
-    return lst3
-
-
-def tile_ids_in(inp):
-    ids = []
-    try:
-        for id in os.listdir(inp['path']):
-            if '_{}.png'.format(str(inp['sldnum'])) in id:
-                ids.append([inp['slide'], inp['level'], inp['path']+'/'+id, inp['BMI'], inp['age'], inp['label']])
-    except FileNotFoundError:
-        print('Ignore:', inp['path'])
-
-    return ids
-
-
 # pair tiles of 10x, 5x, 2.5x of the same area
 def paired_tile_ids_in(slide, label, root_dir, resolution=None, age=None, BMI=None):
     dira = os.path.isdir(root_dir + 'level1')
