@@ -90,7 +90,7 @@ def input_handler():
         title = "Please Confirm"
         if easygui.ccbox(msg, title):  # show a Continue/Cancel dialog
             batchsize = 24
-            epoch = np.inf
+            epoch = 100000
             resolution = None
             pass  # user chose Continue
         else:  # user chose Cancel
@@ -178,7 +178,7 @@ def input_handler():
                 print("Invalid Image! Try again!")
                 imagefile = None
         if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
-        if epoch is None: epoch = float(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or np.inf)
+        if epoch is None: epoch = float(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or 100000)
         if resolution is None:
             resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
@@ -260,7 +260,7 @@ def testloader(data_dir, imgg):
 
 
 # loading images for dictionaries and generate tfrecords
-def loader(totlist_dir, ds, data_dir):
+def loader(totlist_dir, ds):
     if ds == 'train':
         slist = pd.read_csv(totlist_dir + '/tr_sample.csv', header=0)
     elif ds == 'validation':
@@ -275,7 +275,7 @@ def loader(totlist_dir, ds, data_dir):
     lblist = slist['label'].values.tolist()
     wtlist = slist['BMI'].values.tolist()
     aglist = slist['age'].values.tolist()
-    filename = data_dir + '/' + ds + '.tfrecords'
+    filename = totlist_dir + '/' + ds + '.tfrecords'
     writer = tf.python_io.TFRecordWriter(filename)
     for i in range(len(lblist)):
         try:
