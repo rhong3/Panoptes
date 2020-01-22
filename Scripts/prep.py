@@ -16,6 +16,7 @@ import easygui
 import staintools
 import data_input
 import Slicer
+import sample_prep
 
 def input_handler():
     try:
@@ -50,43 +51,31 @@ def input_handler():
         # Box6&7
         if mode == "validate":
             # Box6
-            title = "Enter your information"
+            modeltoload = None
             msg = "I need some more information to proceed. " \
-                    "Please make sure that the model to be loaded is of the same architecture you chose."
-            fieldNames = ["trained model name", "full path to trained model"]
-            fieldValues = []  # we start with blanks for the values
-            fieldValues = easygui.multenterbox(msg, title, fieldNames)
-            # make sure that none of the fields was left blank
-            while 1:
-                if fieldValues is None: break
-                errmsg = ""
-                for i in range(len(fieldNames)):
-                    if fieldValues[i].strip() == "":
-                        errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-                if errmsg == "": break  # no problems found
-                fieldValues = easygui.multenterbox(errmsg, title, fieldNames, fieldValues)
-            modeltoload = fieldValues[0]
-            path_to_modeltoload = fieldValues[1]
+                  "Please enter the full path to trained model to be loaded (without .meta)." \
+                  "Please make sure that the model to be loaded is of the same architecture you chose."
+            while modeltoload is None:
+                modeltoload  = easygui.enterbox(msg)
+                if not os.path.isfile(modeltoload):
+                    msg = "Invalid Input! Try again" \
+                          "Please enter the full path to trained model to be loaded (without .meta)." \
+                          "Please make sure that the model to be loaded is of the same architecture you chose."
+                    modeltoload = None
             imagefile = None
         elif mode == "test":
             # Box6
-            title = "Enter your information"
+            modeltoload = None
             msg = "I need some more information to proceed. " \
-                    "Please make sure that the model to be loaded is of the same architecture you chose."
-            fieldNames = ["trained model name", "full path to trained model"]
-            fieldValues = []  # we start with blanks for the values
-            fieldValues = easygui.multenterbox(msg, title, fieldNames)
-            # make sure that none of the fields was left blank
-            while 1:
-                if fieldValues is None: break
-                errmsg = ""
-                for i in range(len(fieldNames)):
-                    if fieldValues[i].strip() == "":
-                        errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-                if errmsg == "": break  # no problems found
-                fieldValues = easygui.multenterbox(errmsg, title, fieldNames, fieldValues)
-            modeltoload = fieldValues[0]
-            path_to_modeltoload = fieldValues[1]
+                  "Please enter the full path to trained model to be loaded (without .meta)." \
+                  "Please make sure that the model to be loaded is of the same architecture you chose."
+            while modeltoload is None:
+                modeltoload = easygui.enterbox(msg)
+                if not os.path.isfile(modeltoload):
+                    msg = "Invalid Input! Try again" \
+                          "Please enter the full path to trained model to be loaded (without .meta)." \
+                          "Please make sure that the model to be loaded is of the same architecture you chose."
+                    modeltoload = None
             # Box7
             msg = "Select the slide you want to predict?"
             title = "Select a slide in the 'images' folder."
@@ -94,7 +83,6 @@ def input_handler():
             imagefile = easygui.choicebox(msg, title, choices)
         else:
             modeltoload = None
-            path_to_modeltoload = None
             imagefile = None
         # Box8
         msg = "Almost there! Do you agree with our default batch size and max epoch number?" \
@@ -133,7 +121,6 @@ def input_handler():
         parser.add_argument('--feature', type=str)
         parser.add_argument('--epoch', type=float)
         parser.add_argument('--modeltoload', type=str)
-        parser.add_argument('--path_to_modeltoload', type=str)
         parser.add_argument('--imagefile', type=str)
         parser.add_argument('--resolution', type=int)
 
@@ -146,29 +133,59 @@ def input_handler():
         feature = args.feature
         epoch = args.epoch
         modeltoload = args.modeltoload
-        path_to_modeltoload = args.path_to_modeltoload
         imagefile = args.imagefile
         resolution = args.resolution
-
-        if mode is None: mode = input("Please input a mode (train/validation/test): ")
+        if mode not in ['train', 'validate', 'test']:
+            mode = None
+        if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
+                           "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
+                           "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
+            feature = None
+        if architecture not in ["P1", "P2", "P3", "P4", "PC1", "PC2", "PC3", "PC4"]:
+            architecture = None
+        if mode != "train":
+            if not os.path.isfile(modeltoload):
+                modeltoload = None
+        if mode == "test":
+            if imagefile not in [f for f in os.listdir("../images")]:
+                imagefile = None
+        while mode is None:
+            mode = input("Please input a mode (train/validation/test): ")
+            if mode not in ['train', 'validate', 'test']:
+                print("Invalid input! Try again!")
+                mode = None
         if out_dir is None: out_dir = input("Please input a directory name for outputs (under 'Results' directory): ")
-        if feature is None: feature = input("Please input a feature to predict: ")
-        if architecture is None: architecture = input("Please input an architecture to use: ")
-        if modeltoload is None: modeltoload = input("Please input trained model to load (ENTER to skip): ") or None
-        if path_to_modeltoload is None: path_to_modeltoload = \
-            input("Please input full path to trained model to load (ENTER to skip): ") or None
-        if imagefile is None: imagefile = input("Please input a slide to predict (ENTER to skip): ") or None
+        while feature is None:
+            feature = input("Please input a feature to predict: ")
+            if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
+                               "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
+                               "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
+                print("Invalid input! Try again!")
+                feature = None
+        while architecture is None:
+            architecture = input("Please input an architecture to use: ")
+            if architecture not in ["P1", "P2", "P3", "P4", "PC1", "PC2", "PC3", "PC4"]:
+                print("Invalid input! Try again!")
+                architecture = None
+        while modeltoload is None and mode != "train":
+            modeltoload = str(input("Please input full path to trained model to load (without .meta): ")) or None
+            if not os.path.isfile(modeltoload):
+                print("Invalid path! Try again!")
+                modeltoload = None
+        while imagefile is None and mode == "test":
+            imagefile = str(input("Please input a slide to predict (in 'images' directory): ")) or None
+            if imagefile not in [f for f in os.listdir("../images")]:
+                print("Invalid Image! Try again!")
+                imagefile = None
         if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
         if epoch is None: epoch = float(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or np.inf)
-        if resolution is None: resolution = \
-            input("Please input the max resolution of slides (ENTER to skip): ") or None
+        if resolution is None:
+            resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
     print("All set! Your inputs are: ")
-    print([mode, out_dir, feature, architecture, modeltoload, path_to_modeltoload,
-           imagefile, batchsize, epoch, resolution], flush=True)
+    print([mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution], flush=True)
 
-    return mode, out_dir, feature, architecture, modeltoload, path_to_modeltoload, \
-           imagefile, batchsize, epoch, resolution
+    return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution
 
 
 # count numbers of training and testing images
@@ -209,6 +226,37 @@ def _int64_feature(value):
 # used for tfrecord images generation
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+
+def testloader(data_dir, imgg):
+    slist = sample_prep.paired_tile_ids_in(imgg, data_dir)
+    slist.insert(loc=0, column='Num', value=slist.index)
+    slist.to_csv(data_dir+ '/te_sample.csv', header=True, index=False)
+    imlista = slist['L0path'].values.tolist()
+    imlistb = slist['L1path'].values.tolist()
+    imlistc = slist['L2path'].values.tolist()
+    filename = data_dir + '/test.tfrecords'
+    writer = tf.python_io.TFRecordWriter(filename)
+    for i in range(len(imlista)):
+        try:
+            # Load the image
+            imga = load_image(imlista[i])
+            imgb = load_image(imlistb[i])
+            imgc = load_image(imlistc[i])
+            # Create a feature
+            feature = {'test/imageL0': _bytes_feature(tf.compat.as_bytes(imga.tostring())),
+                       'test/imageL1': _bytes_feature(tf.compat.as_bytes(imgb.tostring())),
+                       'test/imageL2': _bytes_feature(tf.compat.as_bytes(imgc.tostring()))}
+            # Create an example protocol buffer
+            example = tf.train.Example(features=tf.train.Features(feature=feature))
+
+            # Serialize to string and write on the file
+            writer.write(example.SerializeToString())
+        except AttributeError:
+            print('Error image: ' + imlista[i] + '~' + imlistb[i] + '~' + imlistc[i])
+            pass
+
+    writer.close()
 
 
 # loading images for dictionaries and generate tfrecords
@@ -271,13 +319,43 @@ def tfreloader(mode, ep, bs, cls, ctr, cte, cva, data_dir):
     return datasets
 
 
-def cutter(img, outdirr, cutt, resolution=None):
+def cutter(img, outdirr, resolution=None):
     # load standard image for normalization
     std = staintools.read_image("../colorstandard.png")
     std = staintools.LuminosityStandardizer.standardize(std)
-    if resolution is None:
+    if resolution == 20:
+        for m in range(1, 4):
+            level = int(m / 2)
+            tff = int(m % 2 + 1)
+            otdir = "../Results/{}/level{}".format(outdirr, str(m))
+            try:
+                os.mkdir(otdir)
+            except(FileExistsError):
+                pass
+            try:
+                numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
+                                                   level=level, std_img=std, ft=tff)
+            except Exception as e:
+                print('Error!')
+                pass
+    elif resolution == 40:
+        for m in range(1, 4):
+            level = int(m / 3 + 1)
+            tff = int(m / level)
+            otdir = "../Results/{}/level{}".format(outdirr, str(m))
+            try:
+                os.mkdir(otdir)
+            except(FileExistsError):
+                pass
+            try:
+                numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
+                                                   level=level, std_img=std, ft=tff)
+            except Exception as e:
+                print('Error!')
+                pass
+    else:
         if "TCGA" in img:
-            for m in range(1, cutt):
+            for m in range(1, 4):
                 level = int(m / 3 + 1)
                 tff = int(m / level)
                 otdir = "../Results/{}/level{}".format(outdirr, str(m))
@@ -292,7 +370,7 @@ def cutter(img, outdirr, cutt, resolution=None):
                     print('Error!')
                     pass
         else:
-            for m in range(1, cutt):
+            for m in range(1, 4):
                 level = int(m / 2)
                 tff = int(m % 2 + 1)
                 otdir = "../Results/{}/level{}".format(outdirr, str(m))
@@ -301,39 +379,8 @@ def cutter(img, outdirr, cutt, resolution=None):
                 except(FileExistsError):
                     pass
                 try:
-                    numx, numy, raw, tct = Slicer.tile(image_file=imgfile, outdir=otdir,
+                    numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
                                                                              level=level, std_img=std, ft=tff)
                 except Exception as e:
                     print('Error!')
                     pass
-    elif resolution == 20:
-        for m in range(1, cutt):
-            level = int(m / 2)
-            tff = int(m % 2 + 1)
-            otdir = "../Results/{}/level{}".format(outdirr, str(m))
-            try:
-                os.mkdir(otdir)
-            except(FileExistsError):
-                pass
-            try:
-                numx, numy, raw, tct = Slicer.tile(image_file=imgfile, outdir=otdir,
-                                                   level=level, std_img=std, ft=tff)
-            except Exception as e:
-                print('Error!')
-                pass
-    elif resolution ==40:
-        for m in range(1, cutt):
-            level = int(m / 3 + 1)
-            tff = int(m / level)
-            otdir = "../Results/{}/level{}".format(outdirr, str(m))
-            try:
-                os.mkdir(otdir)
-            except(FileExistsError):
-                pass
-            try:
-                numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
-                                                   level=level, std_img=std, ft=tff)
-            except Exception as e:
-                print('Error!')
-                pass
-

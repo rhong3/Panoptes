@@ -10,6 +10,9 @@ import sys
 import tensorflow as tf
 import pandas as pd
 from openslide import OpenSlide
+import numpy as np
+import cv2
+import time
 import matplotlib
 matplotlib.use('Agg')
 import prep
@@ -65,8 +68,7 @@ def main(trc, tec, vac, cls, weight, testset=None, to_reload=None, test=None):
 
 if __name__ == "__main__":
     tf.reset_default_graph()
-    mode, out_dir, feature, architecture, modeltoload, path_to_modeltoload, \
-    imagefile, batchsize, epoch, resolution = prep.input_handler()
+    mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution = prep.input_handler()
 
     if architecture in ["PC1", "PC2", "PC3", "PC4"]:
         sup = True
@@ -89,21 +91,23 @@ if __name__ == "__main__":
         "sup": sup
     }
 
-    # paths to directories
     img_dir = '../tiles/'
     LOG_DIR = "../Results/{}".format(out_dir)
-    METAGRAPH_DIR = "../Results/{}".format(out_dir)
-    data_dir = "../Results/{}/data".format(out_dir)
     out_dir = "../Results/{}/out".format(out_dir)
 
-    # make directories if not exist
-    for DIR in (LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
-        try:
-            os.mkdir(DIR)
-        except FileExistsError:
-            pass
-
     if mode == "test":
+        start_time = time.time()
+        modelname = modeltoload.split(sep='/')[-1]
+        modelpath = '/'.join(modeltoload.split(sep='/')[:-2])
+        data_dir = "../Results/{}".format(out_dir)
+        METAGRAPH_DIR = modelpath
+        # make directories if not exist
+        for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
+            try:
+                os.mkdir(DIR)
+            except FileExistsError:
+                pass
+
         if feature == 'histology':
             pos_score = "Serous_score"
             neg_score = "Endometrioid_score"
@@ -111,6 +115,140 @@ if __name__ == "__main__":
             pos_score = "POS_score"
             neg_score = "NEG_score"
 
+        if resolution == 40:
+            ft = 1
+            level = 1
+        elif resolution == 20:
+            level = 0
+            ft = 2
+        else:
+            if "TCGA" in imagefile:
+                ft = 1
+                level = 1
+            else:
+                level = 0
+                ft = 2
+        slide = OpenSlide("../images/" + imagefile)
+
+        bounds_width = slide.level_dimensions[level][0]
+        bounds_height = slide.level_dimensions[level][1]
+        x = 0
+        y = 0
+        half_width_region = 49 * ft
+        full_width_region = 299 * ft
+        stepsize = (full_width_region - half_width_region)
+
+        n_x = int((bounds_width - 1) / stepsize)
+        n_y = int((bounds_height - 1) / stepsize)
+
+        lowres = slide.read_region((x, y), level + 1, (int(n_x * stepsize / 4), int(n_y * stepsize / 4)))
+        raw_img = np.array(lowres)[:, :, :3]
+        fct = ft
+
+        if not os.path.isfile(data_dir + '/level1/dict.csv'):
+            prep.cutter(imagefile, out_dir, resolution=resolution)
+
+        if not os.path.isfile(data_dir + '/test.tfrecords'):
+            prep.testloader(data_dir, imagefile)
+
+        m = cnn.INCEPTION(INPUT_DIM, HYPERPARAMS, meta_graph=modelname, log_dir=LOG_DIR, meta_dir=METAGRAPH_DIR,
+                          model=architecture)
+        print("Loaded! Ready for test!")
+        HE = prep.tfreloader(mode, 1, batchsize, classes, None, None, None, data_dir)
+        m.inference(HE, out_dir, realtest=True, bs=batchsize, pmd=feature)
+
+        slist = pd.read_csv(data_dir + '/te_sample.csv', header=0)
+        # load dictionary of predictions on tiles
+        teresult = pd.read_csv(out_dir + '/Test.csv', header=0)
+        # join 2 dictionaries
+        joined = pd.merge(slist, teresult, how='inner', on=['Num'])
+        joined = joined.drop(columns=['Num'])
+        tile_dict = pd.read_csv(data_dir + '/level1/dict.csv', header=0)
+        tile_dict = tile_dict.rename(index=str, columns={"Loc": "L0path"})
+        joined_dict = pd.merge(joined, tile_dict, how='inner', on=['L0path'])
+
+        if joined_dict[pos_score].mean() > 0.5:
+            print("Positive! Prediction score = " + str(joined_dict[pos_score].mean().round(5)))
+        else:
+            print("Negative! Prediction score = " + str(joined_dict[pos_score].mean().round(5)))
+        # save joined dictionary
+        joined_dict.to_csv(out_dir + '/finaldict.csv', index=False)
+
+        # output heat map of pos and neg.
+        # initialize a graph and for each RGB channel
+        opt = np.full((n_x, n_y), 0)
+        hm_R = np.full((n_x, n_y), 0)
+        hm_G = np.full((n_x, n_y), 0)
+        hm_B = np.full((n_x, n_y), 0)
+
+        # Positive is labeled red in output heat map
+        for index, row in joined_dict.iterrows():
+            opt[int(row["X_pos"]), int(row["Y_pos"])] = 255
+            if row[pos_score] >= 0.5:
+                hm_R[int(row["X_pos"]), int(row["Y_pos"])] = 255
+                hm_G[int(row["X_pos"]), int(row["Y_pos"])] = int((1 - (row[pos_score] - 0.5) * 2) * 255)
+                hm_B[int(row["X_pos"]), int(row["Y_pos"])] = int((1 - (row[pos_score] - 0.5) * 2) * 255)
+            else:
+                hm_B[int(row["X_pos"]), int(row["Y_pos"])] = 255
+                hm_G[int(row["X_pos"]), int(row["Y_pos"])] = int((1 - (row[neg_score] - 0.5) * 2) * 255)
+                hm_R[int(row["X_pos"]), int(row["Y_pos"])] = int((1 - (row[neg_score] - 0.5) * 2) * 255)
+
+        # expand 5 times
+        opt = opt.repeat(50, axis=0).repeat(50, axis=1)
+
+        # small-scaled original image
+        ori_img = cv2.resize(raw_img, (np.shape(opt)[0], np.shape(opt)[1]))
+        ori_img = ori_img[:np.shape(opt)[1], :np.shape(opt)[0], :3]
+        tq = ori_img[:, :, 0]
+        ori_img[:, :, 0] = ori_img[:, :, 2]
+        ori_img[:, :, 2] = tq
+        cv2.imwrite(out_dir + '/Original_scaled.png', ori_img)
+
+        # binary output image
+        topt = np.transpose(opt)
+        opt = np.full((np.shape(topt)[0], np.shape(topt)[1], 3), 0)
+        opt[:, :, 0] = topt
+        opt[:, :, 1] = topt
+        opt[:, :, 2] = topt
+        cv2.imwrite(out_dir + '/Mask.png', opt * 255)
+
+        # output heatmap
+        hm_R = np.transpose(hm_R)
+        hm_G = np.transpose(hm_G)
+        hm_B = np.transpose(hm_B)
+        hm_R = hm_R.repeat(50, axis=0).repeat(50, axis=1)
+        hm_G = hm_G.repeat(50, axis=0).repeat(50, axis=1)
+        hm_B = hm_B.repeat(50, axis=0).repeat(50, axis=1)
+        hm = np.dstack([hm_B, hm_G, hm_R])
+        cv2.imwrite(out_dir + '/HM.png', hm)
+
+        # superimpose heatmap on scaled original image
+        overlay = ori_img * 0.5 + hm * 0.5
+        cv2.imwrite(out_dir + '/Overlay.png', overlay)
+
+        # # Time measure tool
+        print("--- %s seconds ---" % (time.time() - start_time))
+
+    elif mode == "validate":
+        modelname = modeltoload.split(sep='/')[-1]
+        data_dir = "../Results/{}/data".format(out_dir)
+        METAGRAPH_DIR = "../Results/{}".format(out_dir)
+        # make directories if not exist
+        for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
+            try:
+                os.mkdir(DIR)
+            except FileExistsError:
+                pass
+
+    else:
+        data_dir = "../Results/{}/data".format(out_dir)
+        METAGRAPH_DIR = "../Results/{}".format(out_dir)
+        # make directories if not exist
+        for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
+            try:
+                os.mkdir(DIR)
+            except FileExistsError:
+                pass
 
     # get counts of testing, validation, and training datasets;
     # if not exist, prepare testing and training datasets from sampling

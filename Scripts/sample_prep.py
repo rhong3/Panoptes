@@ -13,7 +13,7 @@ import re
 
 
 # pair tiles of 10x, 5x, 2.5x of the same area
-def paired_tile_ids_in(slide, label, root_dir, age=None, BMI=None, resolution=None):
+def paired_tile_ids_in(slide, root_dir, label=None, age=None, BMI=None, resolution=None):
     dira = os.path.isdir(root_dir + 'level1')
     dirb = os.path.isdir(root_dir + 'level2')
     dirc = os.path.isdir(root_dir + 'level3')
@@ -138,15 +138,15 @@ def set_sep(alll, path, cls, resolution=None, sep_file=None, cut=0.2, batchsize=
     train_tiles = pd.DataFrame(columns=['slide', 'label', 'L0path', 'L1path', 'L2path', 'age', 'BMI'])
     validation_tiles = pd.DataFrame(columns=['slide', 'label', 'L0path', 'L1path', 'L2path', 'age', 'BMI'])
     for idx, row in test.iterrows():
-        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'],
+        tile_ids = paired_tile_ids_in(row['slide'],  row['path'], row['label'],
                                       row['age'], row['BMI'], resolution=resolution)
         test_tiles = pd.concat([test_tiles, tile_ids])
     for idx, row in train.iterrows():
-        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'],
+        tile_ids = paired_tile_ids_in(row['slide'], row['path'], row['label'],
                                       row['age'], row['BMI'], resolution=resolution)
         train_tiles = pd.concat([train_tiles, tile_ids])
     for idx, row in validation.iterrows():
-        tile_ids = paired_tile_ids_in(row['slide'], row['label'], row['path'],
+        tile_ids = paired_tile_ids_in(row['slide'], row['path'], row['label'],
                                       row['age'], row['BMI'], resolution=resolution)
         validation_tiles = pd.concat([validation_tiles, tile_ids])
 

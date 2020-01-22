@@ -39,7 +39,6 @@ class INCEPTION:
 
         if meta_graph:  # load saved graph
             model_name = os.path.basename(meta_graph)
-            meta_graph = os.path.abspath(meta_graph)
             tf.train.import_meta_graph(meta_dir + '/' + model_name +'.meta').restore(
                 self.sesh, meta_dir + '/' + model_name)
             handles = self.sesh.graph.get_collection(INCEPTION.RESTORE_KEY)
