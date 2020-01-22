@@ -268,6 +268,7 @@ if __name__ == "__main__":
             m.inference(THE, out_dir, testset=tes, pmd=feature)
         else:
             print("Not enough testing images!")
+
     sys.exit(0)
 
 

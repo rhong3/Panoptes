@@ -57,7 +57,7 @@ def input_handler():
                   "Please make sure that the model to be loaded is of the same architecture you chose."
             while modeltoload is None:
                 modeltoload  = easygui.enterbox(msg)
-                if not os.path.isfile(modeltoload):
+                if not os.path.isfile('.'.join([modeltoload, 'meta'])):
                     msg = "Invalid Input! Try again" \
                           "Please enter the full path to trained model to be loaded (without .meta)." \
                           "Please make sure that the model to be loaded is of the same architecture you chose."
@@ -71,7 +71,7 @@ def input_handler():
                   "Please make sure that the model to be loaded is of the same architecture you chose."
             while modeltoload is None:
                 modeltoload = easygui.enterbox(msg)
-                if not os.path.isfile(modeltoload):
+                if not os.path.isfile('.'.join([modeltoload, 'meta'])):
                     msg = "Invalid Input! Try again" \
                           "Please enter the full path to trained model to be loaded (without .meta)." \
                           "Please make sure that the model to be loaded is of the same architecture you chose."
@@ -120,7 +120,7 @@ def input_handler():
         parser.add_argument('--architecture', type=str)
         parser.add_argument('--feature', type=str)
         parser.add_argument('--epoch', type=float)
-        parser.add_argument('--modeltoload', type=str)
+        parser.add_argument('--modeltoload', type=str, default="NA")
         parser.add_argument('--imagefile', type=str)
         parser.add_argument('--resolution', type=int)
 
@@ -169,16 +169,17 @@ def input_handler():
                 architecture = None
         while modeltoload is None and mode != "train":
             modeltoload = str(input("Please input full path to trained model to load (without .meta): ")) or None
-            if not os.path.isfile(modeltoload):
-                print("Invalid path! Try again!")
-                modeltoload = None
+            if modeltoload is not None:
+                if not os.path.isfile('.'.join([modeltoload, 'meta'])):
+                    print("Invalid path! Try again!")
+                    modeltoload = None
         while imagefile is None and mode == "test":
             imagefile = str(input("Please input a slide to predict (in 'images' directory): ")) or None
             if imagefile not in [f for f in os.listdir("../images")]:
                 print("Invalid Image! Try again!")
                 imagefile = None
         if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
-        if epoch is None: epoch = float(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or 100000)
+        if epoch is None: epoch = int(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or 100000)
         if resolution is None:
             resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
