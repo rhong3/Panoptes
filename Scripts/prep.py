@@ -179,7 +179,7 @@ def input_handler():
                 print("Invalid Image! Try again!")
                 imagefile = None
         if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
-        if epoch is None: epoch = int(input("Please input batch size (DEFAULT=infinity; ENTER to skip): ") or 100000)
+        if epoch is None: epoch = int(input("Please input epoch size (DEFAULT=infinity; ENTER to skip): ") or 100000)
         if resolution is None:
             resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
@@ -229,8 +229,8 @@ def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
-def testloader(data_dir, imgg):
-    slist = sample_prep.paired_tile_ids_in(imgg, data_dir)
+def testloader(data_dir, imgg, resolution):
+    slist = sample_prep.testpaired_tile_ids_in(imgg, data_dir, resolution=resolution)
     slist.insert(loc=0, column='Num', value=slist.index)
     slist.to_csv(data_dir+ '/te_sample.csv', header=True, index=False)
     imlista = slist['L0path'].values.tolist()

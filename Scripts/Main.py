@@ -52,7 +52,7 @@ if __name__ == "__main__":
     if mode == "test":
         start_time = time.time()
         modelname = modeltoload.split(sep='/')[-1]
-        modelpath = '/'.join(modeltoload.split(sep='/')[:-2])
+        modelpath = '/'.join(modeltoload.split(sep='/')[:-1])
         data_dir = "../Results/{}".format(out_dir)
         METAGRAPH_DIR = modelpath
         # make directories if not exist
@@ -103,7 +103,7 @@ if __name__ == "__main__":
             prep.cutter(imagefile, out_dir, resolution=resolution)
 
         if not os.path.isfile(data_dir + '/test.tfrecords'):
-            prep.testloader(data_dir, imagefile)
+            prep.testloader(data_dir, imagefile, resolution)
 
         m = cnn.INCEPTION(INPUT_DIM, HYPERPARAMS, meta_graph=modelname, log_dir=LOG_DIR, meta_dir=METAGRAPH_DIR,
                           model=architecture)

@@ -13,6 +13,46 @@ import re
 
 
 # pair tiles of 10x, 5x, 2.5x of the same area
+def testpaired_tile_ids_in(imgdirr, root_dir, resolution=None):
+    if resolution is None:
+        if "TCGA" in imgdirr:
+            fac = 2000
+        else:
+            fac = 1000
+    else:
+        fac = int(resolution * 50)
+    ids = []
+    for level in range(1, 4):
+        dirrr = root_dir + '/level{}'.format(str(level))
+        for id in os.listdir(dirrr):
+            if '.png' in id:
+                x = int(float(id.split('x-', 1)[1].split('-', 1)[0]) / fac)
+                y = int(float(re.split('.p', id.split('y-', 1)[1])[0]) / fac)
+                ids.append([level, dirrr + '/' + id, x, y])
+            else:
+                print('Skipping ID:', id)
+    ids = pd.DataFrame(ids, columns=['level', 'path', 'x', 'y'])
+    idsa = ids.loc[ids['level'] == 1]
+    idsa = idsa.drop(columns=['level'])
+    idsa = idsa.rename(index=str, columns={"path": "L0path"})
+    idsb = ids.loc[ids['level'] == 2]
+    idsb = idsb.drop(columns=['level'])
+    idsb = idsb.rename(index=str, columns={"path": "L1path"})
+    idsc = ids.loc[ids['level'] == 3]
+    idsc = idsc.drop(columns=['level'])
+    idsc = idsc.rename(index=str, columns={"path": "L2path"})
+    idsa = pd.merge(idsa, idsb, on=['x', 'y'], how='left', validate="many_to_many")
+    idsa['x'] = idsa['x'] - (idsa['x'] % 2)
+    idsa['y'] = idsa['y'] - (idsa['y'] % 2)
+    idsa = pd.merge(idsa, idsc, on=['x', 'y'], how='left', validate="many_to_many")
+    idsa = idsa.drop(columns=['x', 'y'])
+    idsa = idsa.dropna()
+    idsa = idsa.reset_index(drop=True)
+
+    return idsa
+
+
+# pair tiles of 10x, 5x, 2.5x of the same area
 def paired_tile_ids_in(slide, root_dir, label=None, age=None, BMI=None, resolution=None):
     dira = os.path.isdir(root_dir + 'level1')
     dirb = os.path.isdir(root_dir + 'level2')
