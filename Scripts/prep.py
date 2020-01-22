@@ -347,7 +347,16 @@ def tfreloader(mode, ep, bs, cls, ctr, cte, cva, data_dir):
     return datasets
 
 
-def cutter(img, outdirr, resolution=None):
+def check_new_image(ref_file, tiledir="../tiles"):
+    todolist=[]
+    existed = os.listdir(tiledir)
+    for idx, row in ref_file.iterrows():
+        if row['patient'] not in existed:
+            todolist.append([str(row['patient']), str(row['sld']), str(row['sld_num'])])
+    return todolist
+
+
+def cutter(img, outdirr, dp=None, resolution=None):
     # load standard image for normalization
     std = staintools.read_image("../colorstandard.png")
     std = staintools.LuminosityStandardizer.standardize(std)
@@ -362,7 +371,7 @@ def cutter(img, outdirr, resolution=None):
                 pass
             try:
                 numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
-                                                   level=level, std_img=std, ft=tff)
+                                                   level=level, std_img=std, ft=tff, dp=dp)
             except Exception as e:
                 print('Error!')
                 pass
@@ -377,7 +386,7 @@ def cutter(img, outdirr, resolution=None):
                 pass
             try:
                 numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
-                                                   level=level, std_img=std, ft=tff)
+                                                   level=level, std_img=std, ft=tff, dp=dp)
             except Exception as e:
                 print('Error!')
                 pass
@@ -393,7 +402,7 @@ def cutter(img, outdirr, resolution=None):
                     pass
                 try:
                     numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
-                                                                             level=level, std_img=std, ft=tff)
+                                                                             level=level, std_img=std, ft=tff, dp=dp)
                 except Exception as e:
                     print('Error!')
                     pass
@@ -408,7 +417,7 @@ def cutter(img, outdirr, resolution=None):
                     pass
                 try:
                     numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
-                                                                             level=level, std_img=std, ft=tff)
+                                                                             level=level, std_img=std, ft=tff, dp=dp)
                 except Exception as e:
                     print('Error!')
                     pass

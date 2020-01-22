@@ -195,6 +195,11 @@ if __name__ == "__main__":
             except FileExistsError:
                 pass
 
+        reff = pd.read_csv("../sample_label.csv", header=0)
+        tocut = prep.check_new_image(reff, img_dir)
+        for im in tocut:
+            prep.cutter(im[1], img_dir + '/' + im[0], dp=im[2], resolution=resolution)
+
         # get counts of testing, validation, and training datasets;
         # if not exist, prepare testing and training datasets from sampling
         if os.path.isfile(data_dir + '/tr_sample.csv') and os.path.isfile(data_dir + '/te_sample.csv') \
@@ -204,7 +209,7 @@ if __name__ == "__main__":
             tes = pd.read_csv(data_dir + '/te_sample.csv', header=0)
             vas = pd.read_csv(data_dir + '/va_sample.csv', header=0)
         else:
-            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir)
+            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir, ref_file='../sample_label.csv')
             trs, tes, vas = sample_prep.set_sep(alll, path=data_dir, cls=classes, cut=0.2,
                                                 resolution=resolution, sep_file=None, batchsize=batchsize)
             trc, tec, vac, weights = prep.counters(data_dir, classes)
@@ -234,6 +239,11 @@ if __name__ == "__main__":
             except FileExistsError:
                 pass
 
+        reff = pd.read_csv("../sample_label.csv", header=0)
+        tocut = prep.check_new_image(reff, img_dir)
+        for im in tocut:
+            prep.cutter(im[1], img_dir + '/' + im[0], dp=im[2], resolution=resolution)
+
         # get counts of testing, validation, and training datasets;
         # if not exist, prepare testing and training datasets from sampling
         if os.path.isfile(data_dir + '/tr_sample.csv') and os.path.isfile(data_dir + '/te_sample.csv') \
@@ -243,7 +253,7 @@ if __name__ == "__main__":
             tes = pd.read_csv(data_dir + '/te_sample.csv', header=0)
             vas = pd.read_csv(data_dir + '/va_sample.csv', header=0)
         else:
-            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir)
+            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir, ref_file='../sample_label.csv')
             trs, tes, vas = sample_prep.set_sep(alll, path=data_dir, cls=classes, cut=0.2,
                                                 resolution=resolution, sep_file=None, batchsize=batchsize)
             trc, tec, vac, weights = prep.counters(data_dir, classes)
