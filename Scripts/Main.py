@@ -22,7 +22,8 @@ matplotlib.use('Agg')
 
 if __name__ == "__main__":
     tf.reset_default_graph()
-    mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution = prep.input_handler()
+    mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, BMI, age \
+        = prep.input_handler()
 
     if architecture in ["PC1", "PC2", "PC3", "PC4"]:
         sup = True
@@ -103,7 +104,7 @@ if __name__ == "__main__":
             prep.cutter(imagefile, out_dir, resolution=resolution)
 
         if not os.path.isfile(data_dir + '/test.tfrecords'):
-            prep.testloader(data_dir, imagefile, resolution)
+            prep.testloader(data_dir, imagefile, resolution, BMI, age)
 
         m = cnn.INCEPTION(INPUT_DIM, HYPERPARAMS, meta_graph=modelname, log_dir=LOG_DIR, meta_dir=METAGRAPH_DIR,
                           model=architecture)

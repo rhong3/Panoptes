@@ -63,6 +63,8 @@ def input_handler():
                           "Please make sure that the model to be loaded is of the same architecture you chose."
                     modeltoload = None
             imagefile = None
+            BMI =  None
+            age = None
         elif mode == "test":
             # Box6
             modeltoload = None
@@ -81,9 +83,19 @@ def input_handler():
             title = "Select a slide in the 'images' folder."
             choices = [f for f in os.listdir("../images")]
             imagefile = easygui.choicebox(msg, title, choices)
+            # Box7.5.1
+            msg = "Enter the patient's BMI if known (ENTER to skip)"
+            BMI = easygui.enterbox(msg)
+            # Box7.5.2
+            msg = "Enter the patient's age if known (ENTER to skip)"
+            age = easygui.enterbox(msg)
+            if not isinstance(BMI, float): BMI = np.nan
+            if not isinstance(age, float): age = np.nan
         else:
             modeltoload = None
             imagefile = None
+            BMI = None
+            age = None
         # Box8
         msg = "Almost there! Do you agree with our default batch size and max epoch number?" \
               "Batch_size = 24; max epoch number = infinity; Max resolution of original slides = None"
@@ -123,6 +135,8 @@ def input_handler():
         parser.add_argument('--modeltoload', type=str, default="NA")
         parser.add_argument('--imagefile', type=str)
         parser.add_argument('--resolution', type=int)
+        parser.add_argument('--BMI', type=float)
+        parser.add_argument('--age', type=float)
 
         args = parser.parse_args()
 
@@ -135,6 +149,8 @@ def input_handler():
         modeltoload = args.modeltoload
         imagefile = args.imagefile
         resolution = args.resolution
+        BMI = args.BMI
+        age = args.age
         if mode not in ['train', 'validate', 'test']:
             mode = None
         if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
@@ -180,13 +196,16 @@ def input_handler():
                 imagefile = None
         if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
         if epoch is None: epoch = int(input("Please input epoch size (DEFAULT=infinity; ENTER to skip): ") or 100000)
+        if mode == "test":
+            if not isinstance(BMI, float): BMI = float(input("Please input patient BMI (ENTER to skip): ") or np.nan)
+            if not isinstance(age, float): age = float(input("Please input patient age (ENTER to skip): ") or np.nan)
         if resolution is None:
             resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
     print("All set! Your inputs are: ")
     print([mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution], flush=True)
 
-    return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution
+    return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, BMI, age
 
 
 # count numbers of training and testing images
@@ -229,13 +248,17 @@ def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
-def testloader(data_dir, imgg, resolution):
+def testloader(data_dir, imgg, resolution, BMI, age):
     slist = sample_prep.testpaired_tile_ids_in(imgg, data_dir, resolution=resolution)
     slist.insert(loc=0, column='Num', value=slist.index)
+    slist.insert(loc=4, column='BMI', value=BMI)
+    slist.insert(loc=4, column='age', value=age)
     slist.to_csv(data_dir+ '/te_sample.csv', header=True, index=False)
     imlista = slist['L0path'].values.tolist()
     imlistb = slist['L1path'].values.tolist()
     imlistc = slist['L2path'].values.tolist()
+    wtlist = slist['BMI'].values.tolist()
+    aglist = slist['age'].values.tolist()
     filename = data_dir + '/test.tfrecords'
     writer = tf.python_io.TFRecordWriter(filename)
     for i in range(len(imlista)):
@@ -244,8 +267,12 @@ def testloader(data_dir, imgg, resolution):
             imga = load_image(imlista[i])
             imgb = load_image(imlistb[i])
             imgc = load_image(imlistc[i])
+            wt = wtlist[i]
+            ag = aglist[i]
             # Create a feature
-            feature = {'test/imageL0': _bytes_feature(tf.compat.as_bytes(imga.tostring())),
+            feature = {'test/BMI': _float_feature(wt),
+                       'test/age': _float_feature(ag),
+                       'test/imageL0': _bytes_feature(tf.compat.as_bytes(imga.tostring())),
                        'test/imageL1': _bytes_feature(tf.compat.as_bytes(imgb.tostring())),
                        'test/imageL2': _bytes_feature(tf.compat.as_bytes(imgc.tostring()))}
             # Create an example protocol buffer

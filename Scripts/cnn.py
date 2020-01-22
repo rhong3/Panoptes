@@ -177,7 +177,7 @@ class INCEPTION:
                             feed_dict = {self.xa_in: xa, self.xb_in: xb, self.xc_in: xc,
                                          self.dm_in: dm, self.is_train: train_status}
                         else:
-                            xa, xb, xc = sessa.run(next_element)
+                            xa, xb, xc, dm = sessa.run(next_element)
                             feed_dict = {self.xa_in: xa, self.xb_in: xb, self.xc_in: xc,
                                          self.dm_in: None, self.is_train: train_status}
                         fetches = [self.pred, self.net, self.w]

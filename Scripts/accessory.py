@@ -265,7 +265,7 @@ def realout(pdx, path, name, pmd):
     prl.reset_index(drop=True, inplace=True)
     out = pd.concat([out, prl], axis=1)
     out.insert(loc=0, column='Num', value=out.index)
-    out.to_csv("../Results/{}/out/{}.csv".format(path, name), index=False)
+    out.to_csv("{}/{}.csv".format(path, name), index=False)
 
 
 # tile level; need prediction scores, true labels, output path, and name of the files for metrics; accuracy, AUROC; PRC.
