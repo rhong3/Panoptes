@@ -99,12 +99,12 @@ def input_handler():
             imagefile = easygui.choicebox(msg, title, choices)
             # Box7.5.1 patient BMI if known
             msg = "Enter the patient's BMI if known (ENTER to skip)"
-            BMI = float(easygui.enterbox(msg))
+            BMI = easygui.enterbox(msg)
             # Box7.5.2 patient age if known
             msg = "Enter the patient's age if known (ENTER to skip)"
-            age = float(easygui.enterbox(msg))
-            if not isinstance(BMI, float): BMI = np.nan
-            if not isinstance(age, float): age = np.nan
+            age = easygui.enterbox(msg)
+            if BMI == '': BMI = np.nan
+            if age == '': age = np.nan
             label_file = None
             split_file = None
         else:
@@ -145,9 +145,9 @@ def input_handler():
                         errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
                 if errmsg == "": break  # no problems found
                 fieldValues = easygui.multenterbox(errmsg, title, fieldNames, fieldValues)
-            batchsize = int(fieldValues[0])
-            epoch = int(fieldValues[1])
-            resolution = int(fieldValues[2])
+            batchsize = fieldValues[0]
+            epoch = fieldValues[1]
+            resolution = fieldValues[2]
 
     except Exception as e:  # NON-GUI INPUT
         # non-interactive submission scripts
@@ -235,14 +235,14 @@ def input_handler():
                 print("Invalid Image! Try again!")
                 imagefile = None
         # enter hyperparameters
-        if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ")) or 24
-        if epoch is None: epoch = int(input("Please input epoch size (DEFAULT=infinity; ENTER to skip): ")) or 100000
+        if batchsize is None: batchsize = input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24
+        if epoch is None: epoch = input("Please input epoch size (DEFAULT=infinity; ENTER to skip): ") or 100000
         if resolution is None:
-            resolution = int(input("Please input the max resolution of slides (ENTER to skip): ")) or None
+            resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
         # enter BMI and age if known
         if mode == "test":
-            if not isinstance(BMI, float): BMI = float(input("Please input patient BMI (ENTER to skip): ")) or np.nan
-            if not isinstance(age, float): age = float(input("Please input patient age (ENTER to skip): ")) or np.nan
+            if not isinstance(BMI, float): BMI = input("Please input patient BMI (ENTER to skip): ") or np.nan
+            if not isinstance(age, float): age = input("Please input patient age (ENTER to skip): ") or np.nan
         # enter label file
         if label_file is None and mode != "test":
             label_file = str(input("Please input full path to label file (ENTER to skip): ")) or None
