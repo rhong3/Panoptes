@@ -34,8 +34,10 @@ def input_handler():
         choices = ['train', 'validate', 'test']
         mode = easygui.buttonbox(msg, choices=choices)
         # Box3
-        msg = "Okay! Where would you like your results to go? (Name a folder under 'Results' directory)"
-        out_dir = easygui.enterbox(msg)
+        out_dir = None
+        while out_dir is None:
+            msg = "Okay! Where would you like your results to go? (Name a folder under 'Results' directory)"
+            out_dir = easygui.enterbox(msg)
         # Box4
         msg = "What would you like to predict today?"
         title = "Select a feature to predict"
@@ -193,7 +195,8 @@ def input_handler():
             if mode not in ['train', 'validate', 'test']:
                 print("Invalid input! Try again!")
                 mode = None
-        if out_dir is None: out_dir = input("Please input a directory name for outputs (under 'Results' directory): ")
+        while out_dir is None:
+            out_dir = input("Please input a directory name for outputs (under 'Results' directory): ")
         while feature is None:
             feature = input("Please input a feature to predict: ")
             if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
@@ -388,6 +391,10 @@ def check_new_image(ref_file, tiledir="../tiles"):
 
 
 def cutter(img, outdirr, dp=None, resolution=None):
+    try:
+        os.mkdir(outdirr)
+    except(FileExistsError):
+        pass
     # load standard image for normalization
     std = staintools.read_image("../colorstandard.png")
     std = staintools.LuminosityStandardizer.standardize(std)
