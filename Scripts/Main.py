@@ -28,8 +28,12 @@ if __name__ == "__main__":
         label_file = '../sample_label.csv'
 
     print("All set! Your inputs are: ")
-    print([mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution,
-           BMI, age, label_file, split_file], flush=True)
+    print(["mode: {}".format(mode), "output: {}".format(out_dir), "feature: {}".format(feature),
+           "architecture: {}".format(architecture), "pretrained model: {}".format(modeltoload),
+           "slide to predirct: {}".format(imagefile), "batch size: {}".format(batchsize),
+           "maximum epoch: {}".format(epoch), "slide max resolution: {}".format(resolution),
+           "patient BMI: {}".format(BMI), "patient age: {}".format(age), "label file: {}".format(label_file),
+           "sample split file: {}".format(split_file)], flush=True)
 
     if architecture in ["PC1", "PC2", "PC3", "PC4"]:
         sup = True
