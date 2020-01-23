@@ -22,13 +22,13 @@ matplotlib.use('Agg')
 
 if __name__ == "__main__":
     tf.reset_default_graph()
-    mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
+    mode, outdir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
     BMI, age, label_file, split_file = prep.input_handler()
     if label_file is None:
         label_file = '../sample_label.csv'
 
     print("All set! Your inputs are: ")
-    print(["mode: {}".format(mode), "output: {}".format(out_dir), "feature: {}".format(feature),
+    print(["mode: {}".format(mode), "output: {}".format(outdir), "feature: {}".format(feature),
            "architecture: {}".format(architecture), "pretrained model: {}".format(modeltoload),
            "slide to predirct: {}".format(imagefile), "batch size: {}".format(batchsize),
            "maximum epoch: {}".format(epoch), "slide max resolution: {}".format(resolution),
@@ -57,14 +57,14 @@ if __name__ == "__main__":
     }
 
     img_dir = '../tiles'
-    LOG_DIR = "../Results/{}".format(out_dir)
-    out_dir = "../Results/{}/out".format(out_dir)
+    LOG_DIR = "../Results/{}".format(outdir)
+    out_dir = "../Results/{}/out".format(outdir)
 
     if mode == "test":
         start_time = time.time()
         modelname = modeltoload.split(sep='/')[-1]
         modelpath = '/'.join(modeltoload.split(sep='/')[:-1])
-        data_dir = "../Results/{}".format(out_dir)
+        data_dir = "../Results/{}".format(outdir)
         METAGRAPH_DIR = modelpath
         # make directories if not exist
         for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
@@ -120,7 +120,7 @@ if __name__ == "__main__":
                           model=architecture)
         print("Loaded! Ready for test!")
         HE = prep.tfreloader(mode, 1, batchsize, classes, None, None, None, data_dir)
-        m.inference(HE, out_dir, realtest=True, bs=batchsize, pmd=feature)
+        m.inference(HE, outdir, realtest=True, bs=batchsize, pmd=feature)
 
         slist = pd.read_csv(data_dir + '/te_sample.csv', header=0)
         # load dictionary of predictions on tiles
@@ -196,8 +196,8 @@ if __name__ == "__main__":
 
     elif mode == "validate":
         modelname = modeltoload.split(sep='/')[-1]
-        data_dir = "../Results/{}/data".format(out_dir)
-        METAGRAPH_DIR = "../Results/{}".format(out_dir)
+        data_dir = "../Results/{}/data".format(outdir)
+        METAGRAPH_DIR = "../Results/{}".format(outdir)
         # make directories if not exist
         for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
             try:
@@ -235,13 +235,13 @@ if __name__ == "__main__":
         print("Loaded! Ready for test!")
         if tec >= batchsize:
             THE = prep.tfreloader('test', 1, batchsize, classes, trc, tec, vac, data_dir)
-            m.inference(THE, out_dir, testset=tes, pmd=feature)
+            m.inference(THE, outdir, testset=tes, pmd=feature)
         else:
             print("Not enough testing images!")
 
     else:
-        data_dir = "../Results/{}/data".format(out_dir)
-        METAGRAPH_DIR = "../Results/{}".format(out_dir)
+        data_dir = "../Results/{}/data".format(outdir)
+        METAGRAPH_DIR = "../Results/{}".format(outdir)
         # make directories if not exist
         for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
             try:
@@ -283,10 +283,10 @@ if __name__ == "__main__":
         if trc <= 2 * batchsize or vac <= batchsize:
             print("Not enough training/validation images!")
         else:
-            m.train(HE, VHE, trc, batchsize, pmd=feature, dirr=out_dir, max_iter=itt, save=True, outdir=METAGRAPH_DIR)
+            m.train(HE, VHE, trc, batchsize, pmd=feature, dirr=outdir, max_iter=itt, save=True, outdir=METAGRAPH_DIR)
         if tec >= batchsize:
             THE = prep.tfreloader('test', 1, batchsize, classes, trc, tec, vac, data_dir)
-            m.inference(THE, out_dir, testset=tes, pmd=feature)
+            m.inference(THE, outdir, testset=tes, pmd=feature)
         else:
             print("Not enough testing images!")
 
