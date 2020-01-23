@@ -56,7 +56,7 @@ if __name__ == "__main__":
         "sup": sup
     }
 
-    img_dir = '../tiles/'
+    img_dir = '../tiles'
     LOG_DIR = "../Results/{}".format(out_dir)
     out_dir = "../Results/{}/out".format(out_dir)
 
