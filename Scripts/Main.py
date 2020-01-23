@@ -27,10 +27,10 @@ if __name__ == "__main__":
     BMI, age, label_file, split_file = prep.input_handler()
     BMI = float(BMI)
     age = float(age)
-    batchsize = float(batchsize)
-    epoch = float(epoch)
+    batchsize = int(batchsize)
+    epoch = int(epoch)
     if resolution is not None:
-        resolution = float(resolution)
+        resolution = int(resolution)
     if label_file is None:
         label_file = '../sample_label.csv'
 
