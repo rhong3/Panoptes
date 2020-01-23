@@ -111,7 +111,7 @@ if __name__ == "__main__":
         fct = ft
 
         if not os.path.isfile(data_dir + '/level1/dict.csv'):
-            prep.cutter(imagefile, out_dir, resolution=resolution)
+            prep.cutter(imagefile, LOG_DIR, resolution=resolution)
 
         if not os.path.isfile(data_dir + '/test.tfrecords'):
             prep.testloader(data_dir, imagefile, resolution, BMI, age)

@@ -395,7 +395,7 @@ def cutter(img, outdirr, dp=None, resolution=None):
         for m in range(1, 4):
             level = int(m / 2)
             tff = int(m % 2 + 1)
-            otdir = "../Results/{}/level{}".format(outdirr, str(m))
+            otdir = "{}/level{}".format(outdirr, str(m))
             try:
                 os.mkdir(otdir)
             except(FileExistsError):
@@ -410,7 +410,7 @@ def cutter(img, outdirr, dp=None, resolution=None):
         for m in range(1, 4):
             level = int(m / 3 + 1)
             tff = int(m / level)
-            otdir = "../Results/{}/level{}".format(outdirr, str(m))
+            otdir = "{}/level{}".format(outdirr, str(m))
             try:
                 os.mkdir(otdir)
             except(FileExistsError):
@@ -426,7 +426,7 @@ def cutter(img, outdirr, dp=None, resolution=None):
             for m in range(1, 4):
                 level = int(m / 3 + 1)
                 tff = int(m / level)
-                otdir = "../Results/{}/level{}".format(outdirr, str(m))
+                otdir = "{}/level{}".format(outdirr, str(m))
                 try:
                     os.mkdir(otdir)
                 except(FileExistsError):
@@ -441,7 +441,7 @@ def cutter(img, outdirr, dp=None, resolution=None):
             for m in range(1, 4):
                 level = int(m / 2)
                 tff = int(m % 2 + 1)
-                otdir = "../Results/{}/level{}".format(outdirr, str(m))
+                otdir = "{}/level{}".format(outdirr, str(m))
                 try:
                     os.mkdir(otdir)
                 except(FileExistsError):
