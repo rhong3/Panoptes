@@ -22,6 +22,7 @@ matplotlib.use('Agg')
 
 if __name__ == "__main__":
     tf.reset_default_graph()
+    # getting input variables
     mode, outdir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
     BMI, age, label_file, split_file = prep.input_handler()
     if label_file is None:
@@ -95,6 +96,7 @@ if __name__ == "__main__":
                 ft = 2
         slide = OpenSlide("../images/" + imagefile)
 
+        # Get dimension of slide
         bounds_width = slide.level_dimensions[level][0]
         bounds_height = slide.level_dimensions[level][1]
         x = 0
@@ -103,6 +105,7 @@ if __name__ == "__main__":
         full_width_region = 299 * ft
         stepsize = (full_width_region - half_width_region)
 
+        # number of tiles can be cut
         n_x = int((bounds_width - 1) / stepsize)
         n_y = int((bounds_height - 1) / stepsize)
 
@@ -110,18 +113,21 @@ if __name__ == "__main__":
         raw_img = np.array(lowres)[:, :, :3]
         fct = ft
 
+        # cut tiles
         if not os.path.isfile(data_dir + '/level1/dict.csv'):
             prep.cutter(imagefile, LOG_DIR, resolution=resolution)
-
+        # make tfrecords
         if not os.path.isfile(data_dir + '/test.tfrecords'):
             prep.testloader(data_dir, imagefile, resolution, BMI, age)
-
+        # reload pretrained model
         m = cnn.INCEPTION(INPUT_DIM, HYPERPARAMS, meta_graph=modelname, log_dir=LOG_DIR, meta_dir=METAGRAPH_DIR,
                           model=architecture)
         print("Loaded! Ready for test!")
+        # decode tfrecords
         HE = prep.tfreloader(mode, 1, batchsize, classes, None, None, None, data_dir)
+        # prediction
         m.inference(HE, outdir, realtest=True, bs=batchsize, pmd=feature)
-
+        # load tiles dictionary
         slist = pd.read_csv(data_dir + '/te_sample.csv', header=0)
         # load dictionary of predictions on tiles
         teresult = pd.read_csv(out_dir + '/Test.csv', header=0)
@@ -131,7 +137,7 @@ if __name__ == "__main__":
         tile_dict = pd.read_csv(data_dir + '/level1/dict.csv', header=0)
         tile_dict = tile_dict.rename(index=str, columns={"Loc": "L0path"})
         joined_dict = pd.merge(joined, tile_dict, how='inner', on=['L0path'])
-
+        # slide level prediction
         if joined_dict[pos_score].mean() > 0.5:
             print("Positive! Prediction score = " + str(joined_dict[pos_score].mean().round(5)))
         else:
@@ -204,14 +210,15 @@ if __name__ == "__main__":
                 os.mkdir(DIR)
             except FileExistsError:
                 pass
-
-        reff = pd.read_csv("../sample_label.csv", header=0)
+        # check images to be cut
+        reff = pd.read_csv(label_file, header=0)
         tocut = prep.check_new_image(reff, img_dir)
+        # cut into tiles
         for im in tocut:
             prep.cutter(im[1], img_dir + '/' + im[0], dp=im[2], resolution=resolution)
 
         # get counts of testing, validation, and training datasets;
-        # if not exist, prepare testing and training datasets from sampling
+        # if not exist, prepare testing and training datasets from sampling; package into tfrecords
         if os.path.isfile(data_dir + '/tr_sample.csv') and os.path.isfile(data_dir + '/te_sample.csv') \
                 and os.path.isfile(data_dir + '/va_sample.csv'):
             trc, tec, vac, weights = prep.counters(data_dir, classes)
@@ -229,10 +236,11 @@ if __name__ == "__main__":
             prep.loader(data_dir, 'train')
         if not os.path.isfile(data_dir + '/validation.tfrecords'):
             prep.loader(data_dir, 'validation')
-
+        # reload pretrained model
         m = cnn.INCEPTION(INPUT_DIM, HYPERPARAMS, meta_graph=modelname, log_dir=LOG_DIR,
                           meta_dir=METAGRAPH_DIR, model=architecture, weights=weights)
         print("Loaded! Ready for test!")
+        # validating
         if tec >= batchsize:
             THE = prep.tfreloader('test', 1, batchsize, classes, trc, tec, vac, data_dir)
             m.inference(THE, outdir, testset=tes, pmd=feature)
@@ -248,14 +256,15 @@ if __name__ == "__main__":
                 os.mkdir(DIR)
             except FileExistsError:
                 pass
-
-        reff = pd.read_csv("../sample_label.csv", header=0)
+        # determine images to be cut
+        reff = pd.read_csv(label_file, header=0)
         tocut = prep.check_new_image(reff, img_dir)
+        # cut images into tiles
         for im in tocut:
             prep.cutter(im[1], img_dir + '/' + im[0], dp=im[2], resolution=resolution)
 
         # get counts of testing, validation, and training datasets;
-        # if not exist, prepare testing and training datasets from sampling
+        # if not exist, prepare testing and training datasets from sampling; package into tfrecords
         if os.path.isfile(data_dir + '/tr_sample.csv') and os.path.isfile(data_dir + '/te_sample.csv') \
                 and os.path.isfile(data_dir + '/va_sample.csv'):
             trc, tec, vac, weights = prep.counters(data_dir, classes)
@@ -275,16 +284,20 @@ if __name__ == "__main__":
             prep.loader(data_dir, 'validation')
         if sup:
             print("Integrating clinical variables!")
+        # prepare to train from scratch
         m = cnn.INCEPTION(INPUT_DIM, HYPERPARAMS, log_dir=LOG_DIR, model=architecture, weights=weights)
         print("Start a new training!")
+        # decode training and validation sets
         HE = prep.tfreloader('train', epoch, batchsize, classes, trc, tec, vac, data_dir)
         VHE = prep.tfreloader('validation', epoch*100, batchsize, classes, trc, tec, vac, data_dir)
         itt = int(trc * epoch / batchsize) + 1
         if trc <= 2 * batchsize or vac <= batchsize:
             print("Not enough training/validation images!")
         else:
+            # training
             m.train(HE, VHE, trc, batchsize, pmd=feature, dirr=outdir, max_iter=itt, save=True, outdir=METAGRAPH_DIR)
         if tec >= batchsize:
+            # internal testing
             THE = prep.tfreloader('test', 1, batchsize, classes, trc, tec, vac, data_dir)
             m.inference(THE, outdir, testset=tes, pmd=feature)
         else:

@@ -1,9 +1,7 @@
 """
-Tile real scn/svs files; used by Cutter.py
+Tile real scn/svs files
 
 Created on 11/19/2018
-
-*** Removed imlist storage to minimize memory usage 01/24/2019 ***
 
 @author: RH
 """
@@ -43,8 +41,6 @@ def normalization(img, sttd):
 # outdir is the output directory for images;
 # imloc record each tile's relative and absolute coordinates; imlist is a list of cut tiles (Removed 01/24/2019).
 def v_slide(slp, n_y, x, y, tile_size, stepsize, x0, outdir, level, dp, std):
-    # pid = os.getpid()
-    # print('{}: start working'.format(pid))
     slide = OpenSlide(slp)
     imloc = []
     y0 = 0

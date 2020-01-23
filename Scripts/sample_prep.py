@@ -12,7 +12,7 @@ import numpy as np
 import re
 
 
-# pair tiles of 10x, 5x, 2.5x of the same area
+# pair tiles of 10x, 5x, 2.5x of the same area into tile sets for real test image
 def testpaired_tile_ids_in(imgdirr, root_dir, resolution=None):
     if resolution is None:
         if "TCGA" in imgdirr:
@@ -52,7 +52,7 @@ def testpaired_tile_ids_in(imgdirr, root_dir, resolution=None):
     return idsa
 
 
-# pair tiles of 10x, 5x, 2.5x of the same area
+# pair tiles of 10x, 5x, 2.5x of the same area into tile sets
 def paired_tile_ids_in(slide, root_dir, label=None, age=None, BMI=None, resolution=None):
     dira = os.path.isdir(root_dir + 'level1')
     dirb = os.path.isdir(root_dir + 'level2')
@@ -104,7 +104,7 @@ def paired_tile_ids_in(slide, root_dir, label=None, age=None, BMI=None, resoluti
     return idsa
 
 
-# Prepare label at per patient level
+# Prepare label at per patient level according to label file
 def big_image_sum(pmd, path='../tiles/', ref_file='../sample_label.csv'):
     ref = pd.read_csv(ref_file, header=0)
     big_images = []
@@ -149,6 +149,7 @@ def set_sep(alll, path, cls, resolution=None, sep_file=None, cut=0.2, batchsize=
     trlist = []
     telist = []
     valist = []
+    # if no customized split file, ramdomly sampling according to the ratio
     if sep_file is None:
         for i in range(cls):
             subset = alll.loc[alll['label'] == i]
@@ -161,6 +162,7 @@ def set_sep(alll, path, cls, resolution=None, sep_file=None, cut=0.2, batchsize=
             train = unq[int(len(unq) * cut):]
             trlist.append(subset[subset['slide'].isin(train)])
     else:
+        # split samples according to split file
         split = pd.read_csv(sep_file, header=0)
         train = split.loc[split['set'] == 'train']['slide'].tolist()
         validation = split.loc[split['set'] == 'validation']['slide'].tolist()
@@ -177,6 +179,7 @@ def set_sep(alll, path, cls, resolution=None, sep_file=None, cut=0.2, batchsize=
     test_tiles = pd.DataFrame(columns=['slide', 'label', 'L0path', 'L1path', 'L2path', 'age', 'BMI'])
     train_tiles = pd.DataFrame(columns=['slide', 'label', 'L0path', 'L1path', 'L2path', 'age', 'BMI'])
     validation_tiles = pd.DataFrame(columns=['slide', 'label', 'L0path', 'L1path', 'L2path', 'age', 'BMI'])
+    # generate paired tile sets
     for idx, row in test.iterrows():
         tile_ids = paired_tile_ids_in(row['slide'],  row['path'], row['label'],
                                       row['age'], row['BMI'], resolution=resolution)
@@ -193,6 +196,7 @@ def set_sep(alll, path, cls, resolution=None, sep_file=None, cut=0.2, batchsize=
     # No shuffle on test set
     train_tiles = sku.shuffle(train_tiles)
     validation_tiles = sku.shuffle(validation_tiles)
+    # restrict total number of tile sets in each sets
     if train_tiles.shape[0] > int(batchsize * 80000 / 3):
         train_tiles = train_tiles.sample(int(batchsize * 80000 / 3), replace=False)
         print('Truncate training set!')

@@ -197,6 +197,7 @@ def Panoptes1(inputa, inputb, inputc, demographics=None,
         xb, auxb = Branch(inputb, dropout_keep_prob=dropout, num_classes=num_cls, is_training=is_train)
         xc, auxc = Branch(inputc, dropout_keep_prob=dropout, num_classes=num_cls, is_training=is_train)
 
+        # branch concatenation
         x = concatenate([xa, xb, xc], axis=3)  # Output: 8 * 8 * 2688
 
         net = x

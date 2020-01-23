@@ -197,6 +197,7 @@ def Panoptes3(inputa, inputb, inputc, demographics=None,
         xb, auxb = Branch(inputb, dropout_keep_prob=dropout, num_classes=num_cls, is_training=is_train)
         xc, auxc = Branch(inputc, dropout_keep_prob=dropout, num_classes=num_cls, is_training=is_train)
 
+        # branch concatenation
         x = concatenate([xa, xb, xc], axis=3)  # Output: 8 * 8 * 2688
         x = Conv2D(2688, (1, 1), kernel_regularizer=l2(0.0002), activation="relu", padding="same")(x)
         net = x

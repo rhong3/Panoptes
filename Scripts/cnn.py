@@ -1,5 +1,5 @@
 """
-Panoptes driving code for TF2.0
+Panoptes driving code; TF2.0 compatible
 
 Created on 01/21/2020
 
@@ -92,6 +92,7 @@ class INCEPTION:
         dm_in = tf.placeholder(dtype=tf.float32, name="demographic")
         dm_in_reshape = tf.reshape(dm_in, [-1, 2])
 
+        # determine architecture to use
         if model == 'P1' or model == 'PC1':
             import Panoptes1
             logits, nett, ww = Panoptes1.Panoptes1(xa_in_reshape, xb_in_reshape, xc_in_reshape, dm_in_reshape,
@@ -133,12 +134,16 @@ class INCEPTION:
                                                    scope='P1', supermd=sup)
             print('Using Default: Panoptes1')
 
+        # output prediction softmax scores
         pred = tf.nn.softmax(logits, name="prediction")
 
+        # global steps
         global_step = tf.Variable(0, trainable=False)
 
+        # sample weights
         sample_weights = tf.gather(self.weights, tf.argmax(y_in, axis=1))
 
+        # calculate loss
         pred_cost = tf.losses.softmax_cross_entropy(
             onehot_labels=y_in, logits=logits, weights=sample_weights)
 
@@ -146,6 +151,7 @@ class INCEPTION:
 
         tf.summary.tensor_summary("{}_pred".format(model), pred)
 
+        # optimizer based on TensorFlow version
         if int(str(tf.__version__).split('.', 3)[0]) == 2:
             opt = tf.optimizers.Adam(learning_rate=self.learning_rate)
         else:
@@ -165,6 +171,7 @@ class INCEPTION:
         rd = 0
         pdx = []
         yl = []
+        # determine if it is realtest (do not know true label)
         if realtest:
             itr, file, ph = X.data(realtest=True, train=False)
             next_element = itr.get_next()
@@ -259,14 +266,14 @@ class INCEPTION:
         svs = 0
         if save:
             saver = tf.train.Saver(tf.global_variables(), max_to_keep=None)
-
         try:
             err_train = 0
             now = datetime.now().isoformat()[11:]
             print("------- Training begin: {} -------\n".format(now))
+            # training set
             itr, file, ph = X.data()
             next_element = itr.get_next()
-
+            # validation set
             vaitr, vafile, vaph = VAX.data(train=False)
             vanext_element = vaitr.get_next()
 
@@ -303,6 +310,8 @@ class INCEPTION:
                         except ValueError:
                             mintrain = 0
 
+                        # if training loss reaches local minimum, start validation. If average validation loss reaches
+                        # minimum, save the model as the temporary best model.
                         if cost <= mintrain and i > 29999:
                             temp_valid = []
                             for iii in range(20):
@@ -341,6 +350,7 @@ class INCEPTION:
                         else:
                             train_cost.append(cost)
 
+                        # routine validation every 1000 iterations of training
                         if i % 1000 == 0:
                             print("round {} --> loss: ".format(i), cost)
                             temp_valid = []
@@ -374,6 +384,7 @@ class INCEPTION:
                                 saver.save(self.sesh, outfile, global_step=None)
                                 svs = i
 
+                            # after 100000 iterations, start early stopping check every 1000 iterations
                             if i > 99999:
                                 valid_mean_cost = np.mean(validation_cost[-10:-1])
                                 print('Mean validation loss: {}'.format(valid_mean_cost))
@@ -474,6 +485,7 @@ class INCEPTION:
                     now = datetime.now().isoformat()[11:]
                     print("------- Training end: {} -------\n".format(now))
 
+                    # if the best model was achieved less than 30000 iterations, save the last model instead.
                     if svs < 30000 and save:
                             print("Save the last model as the best model.")
                             outfile = os.path.join(os.path.abspath(outdir),
