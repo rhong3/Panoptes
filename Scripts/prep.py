@@ -65,6 +65,14 @@ def input_handler():
             imagefile = None
             BMI =  None
             age = None
+            # Box7.5.3
+            msg = "Please input full path to label file (ENTER to skip):"
+            label_file = easygui.enterbox(msg)
+            # Box7.5.4
+            msg = "Please input full path to sample split file (ENTER to skip):"
+            split_file = easygui.enterbox(msg)
+            if not os.path.isfile(label_file): label_file = None
+            if not os.path.isfile(split_file): split_file = None
         elif mode == "test":
             # Box6
             modeltoload = None
@@ -91,11 +99,21 @@ def input_handler():
             age = easygui.enterbox(msg)
             if not isinstance(BMI, float): BMI = np.nan
             if not isinstance(age, float): age = np.nan
+            label_file = None
+            split_file = None
         else:
             modeltoload = None
             imagefile = None
             BMI = None
             age = None
+            # Box7.5.3
+            msg = "Please input full path to label file (ENTER to skip):"
+            label_file = easygui.enterbox(msg)
+            # Box7.5.4
+            msg = "Please input full path to sample split file (ENTER to skip):"
+            split_file = easygui.enterbox(msg)
+            if not os.path.isfile(label_file): label_file = None
+            if not os.path.isfile(split_file): split_file = None
         # Box8
         msg = "Almost there! Do you agree with our default batch size and max epoch number?" \
               "Batch_size = 24; max epoch number = infinity; Max resolution of original slides = None"
@@ -137,6 +155,8 @@ def input_handler():
         parser.add_argument('--resolution', type=int)
         parser.add_argument('--BMI', type=float)
         parser.add_argument('--age', type=float)
+        parser.add_argument('--label_file', type=str)
+        parser.add_argument('--split_file', type=str)
 
         args = parser.parse_args()
 
@@ -151,6 +171,9 @@ def input_handler():
         resolution = args.resolution
         BMI = args.BMI
         age = args.age
+        label_file = args.label_file
+        split_file = args.split_file
+
         if mode not in ['train', 'validate', 'test']:
             mode = None
         if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
@@ -199,13 +222,24 @@ def input_handler():
         if mode == "test":
             if not isinstance(BMI, float): BMI = float(input("Please input patient BMI (ENTER to skip): ") or np.nan)
             if not isinstance(age, float): age = float(input("Please input patient age (ENTER to skip): ") or np.nan)
+        if label_file is None and mode != "test":
+            label_file = str(input("Please input full path to label file (ENTER to skip): ")) or None
+            if not os.path.isfile(label_file):
+                print("Invalid label file! Default will be used.")
+                label_file = None
+        if split_file is None and mode != "test":
+            split_file = str(input("Please input full path to sample split file (ENTER to skip): ")) or None
+            if not os.path.isfile(split_file):
+                print("Invalid split file! Random split will be used.")
+                split_file = None
         if resolution is None:
             resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
     print("All set! Your inputs are: ")
     print([mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution], flush=True)
 
-    return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, BMI, age
+    return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
+           BMI, age, label_file, split_file
 
 
 # count numbers of training and testing images

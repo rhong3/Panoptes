@@ -22,8 +22,10 @@ matplotlib.use('Agg')
 
 if __name__ == "__main__":
     tf.reset_default_graph()
-    mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, BMI, age \
-        = prep.input_handler()
+    mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
+    BMI, age, label_file, split_file = prep.input_handler()
+    if label_file is None:
+        label_file = '../sample_label.csv'
 
     if architecture in ["PC1", "PC2", "PC3", "PC4"]:
         sup = True
@@ -209,9 +211,9 @@ if __name__ == "__main__":
             tes = pd.read_csv(data_dir + '/te_sample.csv', header=0)
             vas = pd.read_csv(data_dir + '/va_sample.csv', header=0)
         else:
-            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir, ref_file='../sample_label.csv')
+            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir, ref_file=label_file)
             trs, tes, vas = sample_prep.set_sep(alll, path=data_dir, cls=classes, cut=0.2,
-                                                resolution=resolution, sep_file=None, batchsize=batchsize)
+                                                resolution=resolution, sep_file=split_file, batchsize=batchsize)
             trc, tec, vac, weights = prep.counters(data_dir, classes)
         if not os.path.isfile(data_dir + '/test.tfrecords'):
             prep.loader(data_dir, 'test')
@@ -253,9 +255,9 @@ if __name__ == "__main__":
             tes = pd.read_csv(data_dir + '/te_sample.csv', header=0)
             vas = pd.read_csv(data_dir + '/va_sample.csv', header=0)
         else:
-            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir, ref_file='../sample_label.csv')
+            alll = sample_prep.big_image_sum(pmd=feature, path=img_dir, ref_file=label_file)
             trs, tes, vas = sample_prep.set_sep(alll, path=data_dir, cls=classes, cut=0.2,
-                                                resolution=resolution, sep_file=None, batchsize=batchsize)
+                                                resolution=resolution, sep_file=split_file, batchsize=batchsize)
             trc, tec, vac, weights = prep.counters(data_dir, classes)
         if not os.path.isfile(data_dir + '/test.tfrecords'):
             prep.loader(data_dir, 'test')
