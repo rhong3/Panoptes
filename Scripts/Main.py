@@ -27,6 +27,10 @@ if __name__ == "__main__":
     if label_file is None:
         label_file = '../sample_label.csv'
 
+    print("All set! Your inputs are: ")
+    print([mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution,
+           BMI, age, label_file, split_file], flush=True)
+
     if architecture in ["PC1", "PC2", "PC3", "PC4"]:
         sup = True
     else:

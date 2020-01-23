@@ -235,9 +235,6 @@ def input_handler():
         if resolution is None:
             resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
-    print("All set! Your inputs are: ")
-    print([mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution], flush=True)
-
     return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
            BMI, age, label_file, split_file
 
