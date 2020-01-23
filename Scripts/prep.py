@@ -18,6 +18,7 @@ import data_input
 import Slicer
 import sample_prep
 
+
 def input_handler():
     try:
         # Box1
@@ -38,6 +39,7 @@ def input_handler():
         while out_dir is None:
             msg = "Okay! Where would you like your results to go? (Name a folder under 'Results' directory)"
             out_dir = easygui.enterbox(msg)
+            if out_dir == '': out_dir = None
         # Box4
         msg = "What would you like to predict today?"
         title = "Select a feature to predict"
@@ -95,10 +97,10 @@ def input_handler():
             imagefile = easygui.choicebox(msg, title, choices)
             # Box7.5.1
             msg = "Enter the patient's BMI if known (ENTER to skip)"
-            BMI = easygui.enterbox(msg)
+            BMI = float(easygui.enterbox(msg))
             # Box7.5.2
             msg = "Enter the patient's age if known (ENTER to skip)"
-            age = easygui.enterbox(msg)
+            age = float(easygui.enterbox(msg))
             if not isinstance(BMI, float): BMI = np.nan
             if not isinstance(age, float): age = np.nan
             label_file = None
@@ -144,14 +146,15 @@ def input_handler():
             batchsize = int(fieldValues[0])
             epoch = int(fieldValues[1])
             resolution = int(fieldValues[2])
-    except:
+
+    except Exception as e:
         parser = argparse.ArgumentParser(description="Parse some arguments")
         parser.add_argument('--mode', type=str, choices=['train', 'validate', 'test'])
         parser.add_argument('--out_dir', type=str)
         parser.add_argument('--batchsize', type=int)
         parser.add_argument('--architecture', type=str)
         parser.add_argument('--feature', type=str)
-        parser.add_argument('--epoch', type=float)
+        parser.add_argument('--epoch', type=int)
         parser.add_argument('--modeltoload', type=str, default="NA")
         parser.add_argument('--imagefile', type=str)
         parser.add_argument('--resolution', type=int)
@@ -197,6 +200,7 @@ def input_handler():
                 mode = None
         while out_dir is None:
             out_dir = input("Please input a directory name for outputs (under 'Results' directory): ")
+            if out_dir == '': out_dir = None
         while feature is None:
             feature = input("Please input a feature to predict: ")
             if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
@@ -220,8 +224,11 @@ def input_handler():
             if imagefile not in [f for f in os.listdir("../images")]:
                 print("Invalid Image! Try again!")
                 imagefile = None
-        if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24)
-        if epoch is None: epoch = int(input("Please input epoch size (DEFAULT=infinity; ENTER to skip): ") or 100000)
+        if batchsize is None: batchsize = int(input("Please input batch size (DEFAULT=24; ENTER to skip): " or 24))
+        if epoch is None: epoch = int(input("Please input epoch size (DEFAULT=infinity; ENTER to skip): " or 100000))
+        if resolution is None:
+            resolution = int(input("Please input the max resolution of slides (ENTER to skip): ") or None)
+
         if mode == "test":
             if not isinstance(BMI, float): BMI = float(input("Please input patient BMI (ENTER to skip): ") or np.nan)
             if not isinstance(age, float): age = float(input("Please input patient age (ENTER to skip): ") or np.nan)
@@ -235,8 +242,6 @@ def input_handler():
             if not os.path.isfile(split_file):
                 print("Invalid split file! Random split will be used.")
                 split_file = None
-        if resolution is None:
-            resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
 
     return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
            BMI, age, label_file, split_file
