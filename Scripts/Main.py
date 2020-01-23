@@ -25,6 +25,12 @@ if __name__ == "__main__":
     # getting input variables
     mode, outdir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
     BMI, age, label_file, split_file = prep.input_handler()
+    BMI = float(BMI)
+    age = float(age)
+    batchsize = float(batchsize)
+    epoch = float(epoch)
+    if resolution is not None:
+        resolution = float(resolution)
     if label_file is None:
         label_file = '../sample_label.csv'
 
