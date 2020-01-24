@@ -25,8 +25,14 @@ if __name__ == "__main__":
     # getting input variables
     mode, outdir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
     BMI, age, label_file, split_file = prep.input_handler()
-    BMI = float(BMI)
-    age = float(age)
+    if BMI is not None:
+        BMI = float(BMI)
+    else:
+        BMI =np.nan
+    if age is not None:
+        age = float(age)
+    else:
+        age =np.nan
     batchsize = int(batchsize)
     epoch = int(epoch)
     if resolution is not None:
