@@ -160,7 +160,7 @@ def input_handler():
         parser.add_argument('--epoch', type=int)
         parser.add_argument('--modeltoload', type=str, default="NA")
         parser.add_argument('--imagefile', type=str)
-        parser.add_argument('--resolution', type=int)
+        parser.add_argument('--resolution', type=str)
         parser.add_argument('--BMI', type=float)
         parser.add_argument('--age', type=float)
         parser.add_argument('--label_file', type=str)

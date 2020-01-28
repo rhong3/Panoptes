@@ -36,9 +36,14 @@ if __name__ == "__main__":
     batchsize = int(batchsize)
     epoch = int(epoch)
     if resolution is not None:
-        resolution = int(resolution)
-    if label_file is None:
+        if resolution != "NA":
+            resolution = int(resolution)
+        else:
+            resolution = None
+    if label_file is None or label_file == "NA":
         label_file = '../sample_label.csv'
+    if split_file == "NA":
+        split_file = None
 
     print("All set! Your inputs are: ")
     print(["mode: {}".format(mode), "output: {}".format(outdir), "feature: {}".format(feature),
