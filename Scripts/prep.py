@@ -45,7 +45,7 @@ def input_handler():
         # Box4 feature to predict
         msg = "What would you like to predict today?"
         title = "Select a feature to predict"
-        choices = ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H", "ARID1A",
+        choices = ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H", "ARID1A",
                    "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS", "MTOR", "PIK3CA",
                    "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]
         feature = easygui.choicebox(msg, title, choices)
@@ -185,7 +185,7 @@ def input_handler():
         # check for invalid non-interactive input
         if mode not in ['train', 'validate', 'test']:
             mode = None
-        if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
+        if feature not in ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H",
                            "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
                            "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
             feature = None
@@ -210,7 +210,7 @@ def input_handler():
         # enter feature to predict
         while feature is None:
             feature = input("Please input a feature to predict: ")
-            if feature not in ["histology", "subtype", "subtype_POLE", "subtype_MSI", "subtype_CNV-L", "subtype_CNV-H",
+            if feature not in ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H",
                                "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
                                "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
                 print("Invalid input! Try again!")

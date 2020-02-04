@@ -115,9 +115,9 @@ def big_image_sum(pmd, path='../tiles/', ref_file='../sample_label.csv'):
                 big_images.append([row['patient'], 0, path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
             elif row['subtype_MSI'] == 1:
                 big_images.append([row['patient'], 1, path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
-            elif row['subtype_CNV-L'] == 1:
+            elif row['subtype_CNV.L'] == 1:
                 big_images.append([row['patient'], 2, path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
-            elif row['subtype_CNV-H'] == 1:
+            elif row['subtype_CNV.H'] == 1:
                 big_images.append([row['patient'], 3, path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
     elif pmd == 'histology':
         ref = ref.loc[ref['histology_Mixed'] == 0]
@@ -126,7 +126,7 @@ def big_image_sum(pmd, path='../tiles/', ref_file='../sample_label.csv'):
                 big_images.append([row['patient'], 0, path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
             if row['histology_Serous'] == 1:
                 big_images.append([row['patient'], 1, path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
-    elif pmd in ['CNV-L', 'MSI', 'CNV-H', 'POLE']:
+    elif pmd in ['CNV.L', 'MSI', 'CNV.H', 'POLE']:
         ref = ref.loc[ref['subtype_0NA'] == 0]
         for idx, row in ref.iterrows():
             big_images.append([row['patient'], int(row['subtype_{}'.format(pmd)]), path + "{}/".format(str(row['patient'])),
