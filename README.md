@@ -27,7 +27,7 @@ bash file (see example: `Scripts/sample_bash_script.sh`). If bash file not avail
 command line prompts will ask for inputs.  
 ### Usage
  - Create folders `Results`, `images`, `tiles` under Panoptes folder if they are not there. 
- - Please install through pip `pip install panoptes ` (pending)
+ - Please install through pip `pip install panoptes-he `
  - Requirements are listed in `requirements.txt`
  - Scanned H&E slide files should be put in `images` folder under `Panoptes` folder
  - For train and validate mode, label file must also be provided. Example can be found in `sample_lable.csv`
