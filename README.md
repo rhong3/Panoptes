@@ -26,6 +26,7 @@ A simple user interface is included. If GUI is available, pop-up prompts will as
 bash file (see example: `Scripts/sample_bash_script.sh`). If bash file not available or inputs are invalid, interactive
 command line prompts will ask for inputs.  
 ### Usage
+ - Create folders `Results`, `images`, `tiles` under Panoptes folder if they are not there. 
  - Please install through pip `pip install panoptes ` (pending)
  - Requirements are listed in `requirements.txt`
  - Scanned H&E slide files should be put in `images` folder under `Panoptes` folder

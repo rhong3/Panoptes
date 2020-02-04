@@ -9,7 +9,7 @@ requirements = ["easygui>=0.98", "Keras>=2.3", "numpy>=1.17.5", "opencv-python>=
 
 setup(
     name="panoptes",
-    version="0.0.5",
+    version="0.0.6",
     author="Runyu Hong",
     author_email="Runyu.Hong@nyu.edu",
     description="A multi-resolution CNN to predict endometrial cancer features",
