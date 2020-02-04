@@ -23,11 +23,11 @@ PC are architectures with the branch integrating BMI and age; P are original Pan
  - Panoptes2 (InceptionResnetV2-based; P4/PC4)
 ### User Interface
 A simple user interface is included. If GUI is available, pop-up prompts will ask for inputs. Otherwise, read a prepared 
-bash file (see example: `Scripts/sample_bash_script.sh`). If bash file not available or inputs are invalid, interactive
-command line prompts will ask for inputs.  
+bash file (see example: `hepanoptes/sample_bash_script.sh`). If bash file not available or inputs are invalid, 
+interactive command line prompts will ask for inputs.  
 ### Usage
- - Create folders `Results`, `images`, `tiles` under Panoptes folder if they are not there. 
- - Please install through pip `pip install panoptes-he `
+ - Create folders `Results`, `images`, `tiles` under the main folder `Panoptes` if they are not there. 
+ - Please install through pip `pip install panoptes-he ` or download this repository
  - Requirements are listed in `requirements.txt`
  - Scanned H&E slide files should be put in `images` folder under `Panoptes` folder
  - For train and validate mode, label file must also be provided. Example can be found in `sample_lable.csv`
@@ -36,4 +36,6 @@ command line prompts will ask for inputs.
  - Output will be in a folder with name of your choice under `Results` folder.
  - In validate and test, to load pre-trained model, please enter the full path to it. 
  - In test, please enter the full path to the image to test. 
- - For bash input, please refer to example at `Scripts/sample_bash_script.sh`
+ - For bash input, please refer to example at `hepanoptes/sample_bash_script.sh`
+ - If downloaded from this repository, double click the Panoptes.app to run (for Mac with GUI only). Or you can run 
+ `python Main.py` in the main folder. 
