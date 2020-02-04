@@ -8,8 +8,8 @@ requirements = ["easygui>=0.98", "Keras>=2.3", "numpy>=1.17.5", "opencv-python>=
                 "spams>=2.6", "staintools>=2.1.2", "tensorflow>=1.11", "matplotlib>=3.1"]
 
 setup(
-    name="panoptes",
-    version="0.0.6",
+    name="panoptes-he",
+    version="0.0.7",
     author="Runyu Hong",
     author_email="Runyu.Hong@nyu.edu",
     description="A multi-resolution CNN to predict endometrial cancer features",
