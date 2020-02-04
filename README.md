@@ -1,4 +1,4 @@
-# **Panoptes**
+# **Panoptes for cancer H&E image prediction and visualization**
 panoptes is a InceptionResnet-based multi-resolution CNN architecture for cancer H&E histopathological image features 
 prediction. It is initially created to predict visualize features of endometrial carcinoma (UCEC), hoping to automate
 and assist gynecologic pathologists making quicker and accurate decisions and diagnosis without sequencing analyses.
