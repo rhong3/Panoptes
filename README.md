@@ -40,5 +40,6 @@ Alternatively, a python package `panoptes-he` is available under PyPI.
  - For bash input, please refer to example at `Scripts/sample_bash_script.sh`
  - If downloaded from this repository, double click the Panoptes.app to run (for Mac with GUI only). Or you can run 
  `python Main.py` in the `Scripts` folder. 
- - python3 package version can be installed by pip `pip install panoptes-he `; details can be found in 
- https://pypi.org/project/panoptes-he/ and https://github.com/rhong3/panoptes-he/
+ 
+python3 package version can be installed by pip `pip install panoptes-he `; details can be found in 
+https://pypi.org/project/panoptes-he/ and https://github.com/rhong3/panoptes-he/
