@@ -28,7 +28,7 @@ interactive command line prompts will ask for inputs.
 Alternatively, a python package `panoptes-he` is available under PyPI.
 ### Usage
  - Create folders `Results`, `images`, `tiles` under the main folder `Panoptes` if they are not there. 
- - Please download this repository or install the package version through pip `pip install panoptes-he `
+ - Please download this repository.
  - Requirements are listed in `requirements.txt`
  - Scanned H&E slide files should be put in `images` folder under `Panoptes` folder
  - For train and validate mode, label file must also be provided. Example can be found in `sample_lable.csv`
@@ -39,4 +39,6 @@ Alternatively, a python package `panoptes-he` is available under PyPI.
  - In test, please enter the full path to the image to test. 
  - For bash input, please refer to example at `Scripts/sample_bash_script.sh`
  - If downloaded from this repository, double click the Panoptes.app to run (for Mac with GUI only). Or you can run 
- `python Main.py` in the main folder. 
+ `python Main.py` in the `Scripts` folder. 
+ - python3 package version can be installed by pip `pip install panoptes-he `; details can be found in 
+ https://pypi.org/project/panoptes-he/ and https://github.com/rhong3/panoptes-he/
