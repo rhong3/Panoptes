@@ -246,15 +246,21 @@ def input_handler():
         # enter label file
         if label_file is None and mode != "test":
             label_file = str(input("Please input full path to label file (ENTER to skip): ")) or None
-            if not os.path.isfile(label_file):
-                print("Invalid label file! Default will be used.")
-                label_file = None
+            if label_file is not None:
+                if not os.path.isfile(label_file):
+                    print("Invalid label file! Default will be used.")
+                    label_file = "NA"
+            else:
+                label_file = "NA"
         # enter customized sample split file
         if split_file is None and mode != "test":
             split_file = str(input("Please input full path to sample split file (ENTER to skip): ")) or None
-            if not os.path.isfile(split_file):
-                print("Invalid split file! Random split will be used.")
-                split_file = None
+            if split_file is not None:
+                if not os.path.isfile(split_file):
+                    print("Invalid split file! Random split will be used.")
+                    split_file = "NA"
+            else:
+                split_file = "NA"
 
     return mode, out_dir, feature, architecture, modeltoload, imagefile, batchsize, epoch, resolution, \
            BMI, age, label_file, split_file
