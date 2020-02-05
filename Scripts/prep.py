@@ -486,3 +486,4 @@ def cutter(img, outdirr, dp=None, resolution=None):
                 except Exception as e:
                     print('Error!')
                     pass
+
