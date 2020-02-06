@@ -129,12 +129,13 @@ def big_image_sum(pmd, path='../tiles/', ref_file='../sample_label.csv'):
     elif pmd in ['CNV.L', 'MSI', 'CNV.H', 'POLE']:
         ref = ref.loc[ref['subtype_0NA'] == 0]
         for idx, row in ref.iterrows():
-            big_images.append([row['patient'], int(row['subtype_{}'.format(pmd)]), path + "{}/".format(str(row['patient'])),
-                               row['age'], row['BMI']])
+            big_images.append([row['patient'], int(row['subtype_{}'.format(pmd)]),
+                               path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
     else:
         ref = ref.dropna(subset=[pmd])
         for idx, row in ref.iterrows():
-            big_images.append([row['patient'], int(row[pmd]), path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
+            big_images.append([row['patient'], int(row[pmd]),
+                               path + "{}/".format(str(row['patient'])), row['age'], row['BMI']])
 
     datapd = pd.DataFrame(big_images, columns=['slide', 'label', 'path', 'age', 'BMI'])
     datapd = datapd.dropna()
