@@ -260,7 +260,7 @@ if __name__ == "__main__":
         # validating
         if tec >= batchsize:
             THE = prep.tfreloader('test', 1, batchsize, classes, trc, tec, vac, data_dir)
-            m.inference(THE, outdir, testset=tes, pmd=feature)
+            m.inference(THE, outdir, testset=tes, pmd=feature, bs=batchsize)
         else:
             print("Not enough testing images!")
 
@@ -316,7 +316,7 @@ if __name__ == "__main__":
         if tec >= batchsize:
             # internal testing
             THE = prep.tfreloader('test', 1, batchsize, classes, trc, tec, vac, data_dir)
-            m.inference(THE, outdir, testset=tes, pmd=feature)
+            m.inference(THE, outdir, testset=tes, pmd=feature, bs=batchsize)
         else:
             print("Not enough testing images!")
 
