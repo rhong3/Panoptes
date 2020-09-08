@@ -23,7 +23,7 @@ import sample_prep
 # non-interactive input script submission also available
 def input_handler():
     try:
-        # Box1 consent
+        # Box0 consent
         msg = "Hello! Hola! Bonjour! Ciao! I'm Panoptes GUI." \
               "By clicking continue, you agree with my terms and conditions. " \
               "Do you want to continue?"
@@ -32,6 +32,11 @@ def input_handler():
             pass  # user chose Continue
         else:  # user chose Cancel
             sys.exit(0)
+        # Box1 select a cancer type
+        msg = "What cancer type would you like to predict today?"
+        title = "Select a feature to predict"
+        choices = ["UCEC"]
+        cancer = easygui.choicebox(msg, title, choices)
         # Box2 train/validation/test
         msg = "How may I help you? (Train a new model/Validate a model/Test to predict a new sample)"
         choices = ['train', 'validate', 'test']
@@ -45,7 +50,8 @@ def input_handler():
         # Box4 feature to predict
         msg = "What would you like to predict today?"
         title = "Select a feature to predict"
-        choices = ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H", "ARID1A",
+        if cancer == "UCEC":
+            choices = ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H", "ARID1A",
                    "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS", "MTOR", "PIK3CA",
                    "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]
         feature = easygui.choicebox(msg, title, choices)
@@ -152,23 +158,33 @@ def input_handler():
     except Exception as e:  # NON-GUI INPUT
         # non-interactive submission scripts
         parser = argparse.ArgumentParser(description="Parse some arguments")
-        parser.add_argument('--mode', type=str, choices=['train', 'validate', 'test'])
-        parser.add_argument('--out_dir', type=str)
-        parser.add_argument('--batchsize', type=int)
-        parser.add_argument('--architecture', type=str)
-        parser.add_argument('--feature', type=str)
-        parser.add_argument('--epoch', type=int)
-        parser.add_argument('--modeltoload', type=str, default="NA")
-        parser.add_argument('--imagefile', type=str)
-        parser.add_argument('--resolution', type=str)
-        parser.add_argument('--BMI', type=float)
-        parser.add_argument('--age', type=float)
-        parser.add_argument('--label_file', type=str)
-        parser.add_argument('--split_file', type=str)
+        parser.add_argument('--mode', type=str, choices=['train', 'validate', 'test'],
+                            default='train', help='enter train, validate, or test; default is train')
+        parser.add_argument('--cancer', type=str, choices=['UCEC'],
+                            default='UCEC', help='enter a cancer type; default is UCEC')
+        parser.add_argument('--out_dir', type=str, default='../', help='enter an output directory; default is ..')
+        parser.add_argument('--batchsize', type=int, default=24, help='enter batchsize; default is 24')
+        parser.add_argument('--architecture', type=str, default='P2',
+                            help='enter an architecture (P1,P2,P3,P4,PC1,PC2,PC3,PC4); default is P1')
+        parser.add_argument('--feature', type=str,
+                            choices=["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H",
+                                     "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1",
+                                     "FBXW7", "FGFR2", "JAK1", "KRAS", "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN",
+                                     "RPL22", "TP53", "ZFHX3"], default='histology',
+                            help='enter a feature to predict; default is histology')
+        parser.add_argument('--epoch', type=int, default=100, help='enter max epochs; default is 100')
+        parser.add_argument('--modeltoload', type=str, default="NA", help='model to load; default is NA')
+        parser.add_argument('--imagefile', type=str, help='scn image to load')
+        parser.add_argument('--resolution', type=str, help='scn image resolution')
+        parser.add_argument('--BMI', type=float, help='patient BMI')
+        parser.add_argument('--age', type=float, help='patient age')
+        parser.add_argument('--label_file', type=str, help='the path to find label file')
+        parser.add_argument('--split_file', type=str, help='the path to find split file')
 
         args = parser.parse_args()
 
         mode = args.mode
+        cancer = args.cancer
         out_dir = args.out_dir
         batchsize = args.batchsize
         architecture = args.architecture
@@ -185,9 +201,14 @@ def input_handler():
         # check for invalid non-interactive input
         if mode not in ['train', 'validate', 'test']:
             mode = None
-        if feature not in ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H",
-                           "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
-                           "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
+        if cancer not in ['UCEC']:
+            cancer = None
+        if cancer == 'UCEC':
+            if feature not in ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H",
+                               "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
+                               "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
+                feature = None
+        else:
             feature = None
         if architecture not in ["P1", "P2", "P3", "P4", "PC1", "PC2", "PC3", "PC4"]:
             architecture = None
@@ -203,6 +224,12 @@ def input_handler():
             if mode not in ['train', 'validate', 'test']:
                 print("Invalid input! Try again!")
                 mode = None
+        # enter cancer type to predict
+        while cancer is None:
+            cancer = input("Please input a cancer type to predict (UCEC): ")
+            if cancer not in ['UCEC']:
+                print("Invalid input! Try again!")
+                cancer = None
         # enter output directory
         while out_dir is None:
             out_dir = input("Please input a directory name for outputs (under 'Results' directory): ")
@@ -210,11 +237,12 @@ def input_handler():
         # enter feature to predict
         while feature is None:
             feature = input("Please input a feature to predict: ")
-            if feature not in ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H",
-                               "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
-                               "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
-                print("Invalid input! Try again!")
-                feature = None
+            if cancer == 'UCEC':
+                if feature not in ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H",
+                                   "ARID1A", "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS",
+                                   "MTOR", "PIK3CA", "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]:
+                    print("Invalid input! Try again!")
+                    feature = None
         # enter architecture to use
         while architecture is None:
             architecture = input("Please input an architecture to use: ")
@@ -235,8 +263,10 @@ def input_handler():
                 print("Invalid Image! Try again!")
                 imagefile = None
         # enter hyperparameters
-        if batchsize is None: batchsize = input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24
-        if epoch is None: epoch = input("Please input epoch size (DEFAULT=infinity; ENTER to skip): ") or 100000
+        if not isinstance(batchsize, int):
+            batchsize = input("Please input batch size (DEFAULT=24; ENTER to skip): ") or 24
+        if not isinstance(epoch, int):
+            epoch = input("Please input epoch size (DEFAULT=100; ENTER to skip): ") or 100
         if resolution is None:
             resolution = input("Please input the max resolution of slides (ENTER to skip): ") or None
         # enter BMI and age if known
