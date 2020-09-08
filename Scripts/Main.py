@@ -20,6 +20,9 @@ import sample_prep
 matplotlib.use('Agg')
 
 
+cwd = str(os.path.realpath(__file__).split(sep='/Main.py')[0])
+
+
 if __name__ == "__main__":
     tf.reset_default_graph()
     # getting input variables
@@ -41,7 +44,7 @@ if __name__ == "__main__":
         else:
             resolution = None
     if label_file is None or label_file == "NA":
-        label_file = '../sample_label.csv'
+        label_file = cwd+'/../sample_label.csv'
     if split_file == "NA":
         split_file = None
 
@@ -74,15 +77,15 @@ if __name__ == "__main__":
         "sup": sup
     }
 
-    img_dir = '../tiles/'
-    LOG_DIR = "../Results/{}".format(outdir)
-    out_dir = "../Results/{}/out".format(outdir)
+    img_dir = cwd+'/../tiles/'
+    LOG_DIR = cwd+"/../Results/{}".format(outdir)
+    out_dir = cwd+"/../Results/{}/out".format(outdir)
 
     if mode == "test":
         start_time = time.time()
         modelname = modeltoload.split(sep='/')[-1]
         modelpath = '/'.join(modeltoload.split(sep='/')[:-1])
-        data_dir = "../Results/{}".format(outdir)
+        data_dir = cwd+"/../Results/{}".format(outdir)
         METAGRAPH_DIR = modelpath
         # make directories if not exist
         for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
@@ -111,7 +114,7 @@ if __name__ == "__main__":
             else:
                 level = 0
                 ft = 2
-        slide = OpenSlide("../images/" + imagefile)
+        slide = OpenSlide(cwd+"/../images/" + imagefile)
 
         # Get dimension of slide
         bounds_width = slide.level_dimensions[level][0]
@@ -219,8 +222,8 @@ if __name__ == "__main__":
 
     elif mode == "validate":
         modelname = modeltoload.split(sep='/')[-1]
-        data_dir = "../Results/{}/data".format(outdir)
-        METAGRAPH_DIR = "../Results/{}".format(outdir)
+        data_dir = cwd+"/../Results/{}/data".format(outdir)
+        METAGRAPH_DIR = cwd+"/../Results/{}".format(outdir)
         # make directories if not exist
         for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
             try:
@@ -265,8 +268,8 @@ if __name__ == "__main__":
             print("Not enough testing images!")
 
     else:
-        data_dir = "../Results/{}/data".format(outdir)
-        METAGRAPH_DIR = "../Results/{}".format(outdir)
+        data_dir = cwd+"/../Results/{}/data".format(outdir)
+        METAGRAPH_DIR = cwd+"/../Results/{}".format(outdir)
         # make directories if not exist
         for DIR in (out_dir, img_dir, LOG_DIR, METAGRAPH_DIR, data_dir):
             try:

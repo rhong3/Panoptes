@@ -10,7 +10,10 @@ import numpy as np
 import pandas as pd
 import multiprocessing as mp
 import staintools
+import os
 from PIL import Image
+
+cwd = str(os.path.realpath(__file__).split(sep='/Slicer.py')[0])
 
 
 # check if a tile is background or not; return a blank pixel percentage score
@@ -70,7 +73,7 @@ def v_slide(slp, n_y, x, y, tile_size, stepsize, x0, outdir, level, dp, std):
 # First open the slide, determine how many tiles can be cut, record the residue edges width,
 # and calculate the final output prediction heat map size should be. Then, using multithread to cut tiles, and stack up
 # tiles and their position dictionaries.
-def tile(image_file, outdir, level, std_img, path_to_slide="../images/", dp=None, ft=1):
+def tile(image_file, outdir, level, std_img, path_to_slide=str(cwd+"/../images/"), dp=None, ft=1):
     slide = OpenSlide(path_to_slide+image_file)
     slp = str(path_to_slide+image_file)
     print(slp)

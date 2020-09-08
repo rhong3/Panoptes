@@ -19,6 +19,9 @@ import cv2
 from itertools import cycle
 
 
+cwd = str(os.path.realpath(__file__).split(sep='/accessory.py')[0])
+
+
 # Plot ROC and PRC plots
 def ROC_PRC(outtl, pdx, path, name, fdict, dm, accur, pmd):
     if pmd == 'subtype':
@@ -113,7 +116,7 @@ def ROC_PRC(outtl, pdx, path, name, fdict, dm, accur, pmd):
         plt.ylabel('True Positive Rate')
         plt.title('ROC of {}'.format(name))
         plt.legend(loc="lower right")
-        plt.savefig("../Results/{}/out/{}_{}_ROC.png".format(path, name, dm))
+        plt.savefig(cwd+"/../Results/{}/out/{}_{}_ROC.png".format(path, name, dm))
 
         print('Average precision score, micro-averaged over all classes: {0:0.5f}'.format(average_precision["micro"]))
         # Plot all PRC curves
@@ -149,7 +152,7 @@ def ROC_PRC(outtl, pdx, path, name, fdict, dm, accur, pmd):
         plt.ylabel('Precision')
         plt.title('{} Precision-Recall curve: Average Accu={}'.format(name, accur))
         plt.legend(lines, labels, loc=(0, -.38), prop=dict(size=12))
-        plt.savefig("../Results/{}/out/{}_{}_PRC.png".format(path, name, dm))
+        plt.savefig(cwd+"/../Results/{}/out/{}_{}_PRC.png".format(path, name, dm))
 
     else:
         tl = outtl.values[:, 0].ravel()
@@ -169,7 +172,7 @@ def ROC_PRC(outtl, pdx, path, name, fdict, dm, accur, pmd):
         plt.ylabel('True Positive Rate')
         plt.title('{} ROC of {}'.format(name, pmd))
         plt.legend(loc="lower right")
-        plt.savefig("../Results/{}/out/{}_{}_ROC.png".format(path, name, dm))
+        plt.savefig(cwd+"/../Results/{}/out/{}_{}_ROC.png".format(path, name, dm))
 
         average_precision = sklearn.metrics.average_precision_score(tl, y_score)
         print('Average precision-recall score: {0:0.5f}'.format(average_precision))
@@ -190,7 +193,7 @@ def ROC_PRC(outtl, pdx, path, name, fdict, dm, accur, pmd):
         plt.ylim([0.0, 1.05])
         plt.xlim([0.0, 1.0])
         plt.title('{} {} PRC: AP={:0.5f}; Accu={}'.format(pmd, name, average_precision, accur))
-        plt.savefig("../Results/{}/out/{}_{}_PRC.png".format(path, name, dm))
+        plt.savefig(cwd+"/../Results/{}/out/{}_{}_PRC.png".format(path, name, dm))
 
 
 # patient (slide) level; need prediction scores, true labels, output path, and name of the files for metrics;
@@ -240,7 +243,7 @@ def slide_metrics(inter_pd, path, name, fordict, pmd):
         print('Not able to generate plots based on this set!')
     inter_pd['Prediction'] = inter_pd['Prediction'].replace(fordict)
     inter_pd['True_label'] = inter_pd['True_label'].replace(fordict)
-    inter_pd.to_csv("../Results/{}/out/{}_slide.csv".format(path, name), index=True)
+    inter_pd.to_csv(cwd+"/../Results/{}/out/{}_slide.csv".format(path, name), index=True)
 
 
 # for real image prediction, just output the prediction scores as csv
@@ -265,7 +268,7 @@ def realout(pdx, path, name, pmd):
     prl.reset_index(drop=True, inplace=True)
     out = pd.concat([out, prl], axis=1)
     out.insert(loc=0, column='Num', value=out.index)
-    out.to_csv("../Results/{}/out/{}.csv".format(path, name), index=False)
+    out.to_csv(cwd+"/../Results/{}/out/{}.csv".format(path, name), index=False)
 
 
 # tile level; need prediction scores, true labels, output path, and name of the files for metrics; accuracy, AUROC; PRC.
@@ -308,7 +311,7 @@ def metrics(pdx, tl, path, name, pmd, ori_test=None):
         ori_test.reset_index(drop=True, inplace=True)
         stout.reset_index(drop=True, inplace=True)
         stout = pd.concat([ori_test, stout], axis=1)
-    stout.to_csv("../Results/{}/out/{}_tile.csv".format(path, name), index=False)
+    stout.to_csv(cwd+"/../Results/{}/out/{}_tile.csv".format(path, name), index=False)
 
     # accuracy calculations
     tott = out.shape[0]
@@ -360,12 +363,12 @@ def py_map2jpg(imgmap):
 # generating CAM plots of each tile; net is activation; w is weight; pred is prediction scores; x are input images;
 # y are labels; path is output folder, name is test/validation; rd is current batch number
 def CAM(net, w, pred, x, y, path, name, bs, pmd, rd=0):
-    DIRT = "../Results/{}/out/{}_img".format(path, name)
+    DIRT = cwd+"/../Results/{}/out/{}_img".format(path, name)
     if pmd == 'subtype':
-        DIRA = "../Results/{}/out/{}_img/MSI".format(path, name)
-        DIRB = "../Results/{}/out/{}_img/Endometrioid".format(path, name)
-        DIRC = "../Results/{}/out/{}_img/CNV-H".format(path, name)
-        DIRD = "../Results/{}/out/{}_img/POLE".format(path, name)
+        DIRA = cwd+"/../Results/{}/out/{}_img/MSI".format(path, name)
+        DIRB = cwd+"/../Results/{}/out/{}_img/Endometrioid".format(path, name)
+        DIRC = cwd+"/../Results/{}/out/{}_img/CNV-H".format(path, name)
+        DIRD = cwd+"/../Results/{}/out/{}_img/POLE".format(path, name)
         for DIR in (DIRT, DIRA, DIRB, DIRC, DIRD):
             try:
                 os.mkdir(DIR)
@@ -374,8 +377,8 @@ def CAM(net, w, pred, x, y, path, name, bs, pmd, rd=0):
         catdict = {1: 'MSI', 2: 'CNV-L', 3: 'CNV-H', 0: 'POLE'}
         dirdict = {1: DIRA, 2: DIRB, 3: DIRC, 0: DIRD}
     elif pmd == 'histology':
-        DIRA = "../Results/{}/out/{}_img/Endometrioid".format(path, name)
-        DIRB = "../Results/{}/out/{}_img/Serous".format(path, name)
+        DIRA = cwd+"/../Results/{}/out/{}_img/Endometrioid".format(path, name)
+        DIRB = cwd+"/../Results/{}/out/{}_img/Serous".format(path, name)
         for DIR in (DIRT, DIRA, DIRB):
             try:
                 os.mkdir(DIR)
@@ -384,8 +387,8 @@ def CAM(net, w, pred, x, y, path, name, bs, pmd, rd=0):
         catdict = {0: 'Endometrioid', 1: 'Serous'}
         dirdict = {0: DIRA, 1: DIRB}
     else:
-        DIRA = "../Results/{}/out/{}_img/NEG".format(path, name)
-        DIRB = "../Results/{}/out/{}_img/POS".format(path, name)
+        DIRA = cwd+"/../Results/{}/out/{}_img/NEG".format(path, name)
+        DIRB = cwd+"/../Results/{}/out/{}_img/POS".format(path, name)
         for DIR in (DIRT, DIRA, DIRB):
             try:
                 os.mkdir(DIR)
@@ -444,7 +447,7 @@ def CAM(net, w, pred, x, y, path, name, bs, pmd, rd=0):
 
 # CAM for real test; no need to determine correct or wrong
 def CAM_R(net, w, pred, x, path, name, bs, rd=0):
-    DIRR = "../Results/{}/out/{}_img".format(path, name)
+    DIRR = cwd+"/../Results/{}/out/{}_img".format(path, name)
     rd = rd * bs
 
     try:
@@ -515,5 +518,5 @@ def tSNE_prep(flatnet, ori_test, y, pred, path, pmd):
     out = pd.concat([ori_test, out, act], axis=1)
     if out.shape[0] > 30000:
         out = out.sample(30000, replace=False)
-    out.to_csv("../Results/{}/out/For_tSNE.csv".format(path), index=False)
+    out.to_csv(cwd+"/../Results/{}/out/For_tSNE.csv".format(path), index=False)
 

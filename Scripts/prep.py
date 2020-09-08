@@ -19,9 +19,13 @@ import Slicer
 import sample_prep
 
 
+cwd = str(os.path.realpath(__file__).split(sep='/prep.py')[0])
+
+
 # get inputs; if GUI available, use GUI; otherwise, switch to interactive command line automatically;
 # non-interactive input script submission also available
 def input_handler():
+    print(cwd)
     try:
         # Box0 consent
         msg = "Hello! Hola! Bonjour! Ciao! I'm Panoptes GUI." \
@@ -101,7 +105,7 @@ def input_handler():
             # Box7 image to predict
             msg = "Select the slide you want to predict?"
             title = "Select a slide in the 'images' folder."
-            choices = [f for f in os.listdir("../images")]
+            choices = [f for f in os.listdir(cwd+"/../images")]
             imagefile = easygui.choicebox(msg, title, choices)
             # Box7.5.1 patient BMI if known
             msg = "Enter the patient's BMI if known (ENTER to skip)"
@@ -128,11 +132,11 @@ def input_handler():
             if not os.path.isfile(split_file): split_file = None
         # Box8 default hyperparameters (batch size, max epoch, max image resolution)
         msg = "Almost there! Do you agree with our default batch size and max epoch number?" \
-              "Batch_size = 24; max epoch number = infinity; Max resolution of original slides = None"
+              "Batch_size = 24; max epoch number = 100; Max resolution of original slides = None"
         title = "Please Confirm"
         if easygui.ccbox(msg, title):  # show a Continue/Cancel dialog
             batchsize = 24
-            epoch = 100000
+            epoch = 100
             resolution = None
             pass  # user chose Continue
         else:  # user chose Cancel; ask for their choices of hyperparameters
@@ -217,7 +221,7 @@ def input_handler():
             if not os.path.isfile(modeltoload):
                 modeltoload = None
         if mode == "test":
-            if imagefile not in [f for f in os.listdir("../images")]:
+            if imagefile not in [f for f in os.listdir("/Users/rh2740/documents/Panoptes/images")]:
                 imagefile = None
         # enter mode (train/validation/test)
         while mode is None:
@@ -260,7 +264,7 @@ def input_handler():
         # enter image file to predict
         while imagefile is None and mode == "test":
             imagefile = str(input("Please input a slide to predict (in 'images' directory): ")) or None
-            if imagefile not in [f for f in os.listdir("../images")]:
+            if imagefile not in [f for f in os.listdir(cwd+"/../images")]:
                 print("Invalid Image! Try again!")
                 imagefile = None
         # enter hyperparameters
@@ -438,7 +442,7 @@ def tfreloader(mode, ep, bs, cls, ctr, cte, cva, data_dir):
 
 
 # check images to be cut (not in tiles)
-def check_new_image(ref_file, tiledir="../tiles"):
+def check_new_image(ref_file, tiledir=str(cwd+"/../tiles")):
     todolist=[]
     existed = os.listdir(tiledir)
     for idx, row in ref_file.iterrows():
@@ -454,7 +458,7 @@ def cutter(img, outdirr, dp=None, resolution=None):
     except(FileExistsError):
         pass
     # load standard image for normalization
-    std = staintools.read_image("../colorstandard.png")
+    std = staintools.read_image(str(cwd+"/../colorstandard.png"))
     std = staintools.LuminosityStandardizer.standardize(std)
     if resolution == 20:
         for m in range(1, 4):
@@ -484,7 +488,7 @@ def cutter(img, outdirr, dp=None, resolution=None):
                 numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
                                                    level=level, std_img=std, ft=tff, dp=dp)
             except Exception as e:
-                print('Error!')
+                print(e)
                 pass
     else:
         if "TCGA" in img:
@@ -500,7 +504,7 @@ def cutter(img, outdirr, dp=None, resolution=None):
                     numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
                                                                              level=level, std_img=std, ft=tff, dp=dp)
                 except Exception as e:
-                    print('Error!')
+                    print(e)
                     pass
         else:
             for m in range(1, 4):
@@ -515,6 +519,6 @@ def cutter(img, outdirr, dp=None, resolution=None):
                     numx, numy, raw, tct = Slicer.tile(image_file=img, outdir=otdir,
                                                                              level=level, std_img=std, ft=tff, dp=dp)
                 except Exception as e:
-                    print('Error!')
+                    print(e)
                     pass
 
