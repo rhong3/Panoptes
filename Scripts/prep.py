@@ -51,10 +51,10 @@ def input_handler():
         msg = "What would you like to predict today?"
         title = "Select a feature to predict"
         if cancer == "UCEC":
-            choices = ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H", "ARID1A",
+            choicesx = ["histology", "subtype", "POLE", "MSI", "CNV.L", "CNV.H", "ARID1A",
                    "ATM", "BRCA2", "CTCF", "CTNNB1", "FAT1", "FBXW7", "FGFR2", "JAK1", "KRAS", "MTOR", "PIK3CA",
                    "PIK3R1", "PPP2R1A", "PTEN", "RPL22", "TP53", "ZFHX3"]
-        feature = easygui.choicebox(msg, title, choices)
+        feature = easygui.choicebox(msg, title, choicesx)
         # Box5 architecture to use
         msg = "Which architecture do you want to use?"
         title = "Select an architecture"
