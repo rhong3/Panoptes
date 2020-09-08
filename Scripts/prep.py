@@ -68,7 +68,7 @@ def input_handler():
                   "Please enter the full path to trained model to be loaded (without .meta)." \
                   "Please make sure that the model to be loaded is of the same architecture you chose."
             while modeltoload is None:
-                modeltoload  = easygui.enterbox(msg)
+                modeltoload = easygui.enterbox(msg)
                 if not os.path.isfile('.'.join([modeltoload, 'meta'])):
                     msg = "Invalid Input! Try again" \
                           "Please enter the full path to trained model to be loaded (without .meta)." \
@@ -162,7 +162,8 @@ def input_handler():
                             default='train', help='enter train, validate, or test; default is train')
         parser.add_argument('--cancer', type=str, choices=['UCEC'],
                             default='UCEC', help='enter a cancer type; default is UCEC')
-        parser.add_argument('--out_dir', type=str, default='../', help='enter an output directory; default is ..')
+        parser.add_argument('--out_dir', type=str, default='untitled',
+                            help='enter an output directory; default is untitled')
         parser.add_argument('--batchsize', type=int, default=24, help='enter batchsize; default is 24')
         parser.add_argument('--architecture', type=str, default='P2',
                             help='enter an architecture (P1,P2,P3,P4,PC1,PC2,PC3,PC4); default is P1')

@@ -268,7 +268,7 @@ if __name__ == "__main__":
         data_dir = "../Results/{}/data".format(outdir)
         METAGRAPH_DIR = "../Results/{}".format(outdir)
         # make directories if not exist
-        for DIR in (img_dir, LOG_DIR, METAGRAPH_DIR, data_dir, out_dir):
+        for DIR in (out_dir, img_dir, LOG_DIR, METAGRAPH_DIR, data_dir):
             try:
                 os.mkdir(DIR)
             except FileExistsError:
